@@ -102,8 +102,5 @@ if __name__ == '__main__':
     print('#'*54)
     tprint('Welcome!')
     print('#'*54)
-
-    # To make a default directory
-            
-            
+    
     main()
