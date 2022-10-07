@@ -13,9 +13,10 @@ HEADERS = headers = {
 
 def choose_batch():
     batches = [
-        [1, 'Wateen', 'https://msc-mu.com/level/15'],
-        [2, 'Rou7', 'https://msc-mu.com/level/16'],
-        [3, 'Nabed', 'https://msc-mu.com/level/14']
+        [1, 'Rou7', 'https://msc-mu.com/level/16'],
+        [2, 'Wateen', 'https://msc-mu.com/level/15'],
+        [3, 'Nabed', 'https://msc-mu.com/level/14'],
+        [4, 'Wareed', 'https://msc-mu.com/level/13']
     ]
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1] )
@@ -24,7 +25,7 @@ def choose_batch():
         ui_batch = int(ui_batch)
         for batch in batches:
             if ui_batch == batch[0]:
-                print('\n[*] Searching', batch[1] + '\'s batch...')
+                print('\n[*] Searching', batch[1] + '\'s batch...\n')
         batch_url = batches[ui_batch - 1][2]
         return batch_url
     except:
@@ -63,7 +64,7 @@ def choose_course(url):
         print('\n[*]Invalid Input\n')
         choose_course()
 
-def download_lectures(url, course_number):
+def download_lectures(url, course_number, folder):
     course_page = requests.get(url, headers=HEADERS)
     links = re.findall('<a href="(.*)">.*.pdf</a>', course_page.content.decode())
     names = re.findall('<a href=".*">(.*).pdf</a>', course_page.content.decode())
@@ -74,24 +75,35 @@ def download_lectures(url, course_number):
         # os.system('wget ' + link + ' -O \'' + folder + new_name + '\'')
         os.system('powershell -c "Invoke-Webrequest -Uri ' + link+ ' -OutFile \'' + folder + new_name + '\'"') 
         x += 1
+def choose_folder():
+    folder = os.path.expanduser("~") + '\\Downloads\\'
+    answer = input(folder +  "is your default destination, do you want to change that (N/y): ")
+
+    if answer == 'y' or answer == 'yes':
+        valid_folder = False
+        while valid_folder == False:
+            ui_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
+            if os.path.isdir(ui_folder):
+                folder = ui_folder
+                valid_folder = True
+            else:
+                print('\n[*] Folder Not found! ', end='')
+    return folder
 
 def main():
+    folder = choose_folder()
     batch_url = choose_batch()
     course_number = choose_course(batch_url)
 
     download_url = 'https://msc-mu.com/courses/' + course_number
-    download_lectures(download_url, course_number)
+    download_lectures(download_url, course_number, folder)
 
 if __name__ == '__main__':
     print('#'*54)
     tprint('Welcome!')
     print('#'*54)
-    
-    ui_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
-    if os.path.isdir(ui_folder):
-        folder = ui_folder
-    else:
-        print('[*] Folder Not found! ')
-        exit()
+
+    # To make a default directory
+            
             
     main()
