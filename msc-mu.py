@@ -73,11 +73,14 @@ def download_lectures(url, course_number, folder):
     for link in links:
         link = link.strip() + '.pdf'
         new_name = str(x+1) + '. ' + names[x] + '.pdf'
-        # os.system('wget ' + link + ' -O \'' + folder + new_name + '\'')
+        ## FOR LINUX USERS
+        #os.system('wget ' + link + ' -O \'' + folder + new_name + '\'')
         os.system('powershell -c "Invoke-Webrequest -Uri ' + link+ ' -OutFile \'' + folder + new_name + '\'"') 
         x += 1
 def choose_folder():
     folder = os.path.expanduser("~") + '\\Downloads\\'
+    ## FOR LINUX USERS
+    #folder = os.path.expanduser("~") + '/Downloads/'
     answer = input(folder +  "is your default destination, do you want to change that (N/y): ")
 
     if answer == 'y' or answer == 'yes':
