@@ -3,6 +3,7 @@
 from bs4 import BeautifulSoup
 from art import tprint
 
+import html
 import os
 import re
 import requests
@@ -47,6 +48,16 @@ def find_courses(url):
         courses.append([x, course_name, course_number])
     return courses
 
+def find_subject_folder(name, doc):
+    if '&amp;' in name:
+        name = html.unescape(name)
+    folder_source = doc.find_all("a", string=name)[0].parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent
+    folder = re.findall('''</i>
+                    (.*)
+
+                </h6>''', folder_source.decode())
+    return folder[0]
+
 def choose_course(url):
     global courses
     courses = find_courses(url)
@@ -65,22 +76,38 @@ def choose_course(url):
         print('\n[*]Invalid Input\n')
         choose_course()
 
-def download_lectures(url, course_number, folder):
+def download_lectures(url, folder, folder_url):
     course_page = requests.get(url, headers=HEADERS)
     links = re.findall('<a href="(.*)">.*.pdf</a>', course_page.content.decode())
     names = re.findall('<a href=".*">(.*).pdf</a>', course_page.content.decode())
+    page = requests.get(folder_url, headers=HEADERS)
+    doc = BeautifulSoup(page.text, 'html.parser')
     x=0
+    y=0
+    prev_sub_folder = None
     for link in links:
         link = link.strip() + '.pdf'
-        new_name = str(x+1) + '. ' + names[x] + '.pdf'
-        ## FOR LINUX USERS
-        #os.system('wget ' + link + ' -O \'' + folder + new_name + '\'')
-        os.system('powershell -c "Invoke-Webrequest -Uri ' + link+ ' -OutFile \'' + folder + new_name + '\'"') 
+        subject_folder = find_subject_folder(names[x] + '.pdf', doc)
+        if subject_folder == prev_sub_folder:
+            pass
+        else:
+            y = 0 
+        new_name = str(y+1) + '. ' + names[x] + '.pdf'
         x += 1
+        y += 1
+        prev_sub_folder = subject_folder
+        if os.path.isfile(folder + subject_folder + '/' + new_name):
+            print(new_name + ' is already downloaded there XD')
+            continue
+        ## FOR LINUX USERS
+        # os.system('wget ' + link + ' -O \'' + folder  +'/'+ new_name + '\'')
+        os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
+        # os.system('powershell -c "Invoke-Webrequest -Uri ' + link+ ' -OutFile \'' + folder + new_name + '\'"') 
+         
 def choose_folder():
-    folder = os.path.expanduser("~") + '\\Downloads\\'
+    #folder = os.path.expanduser("~") + '\\Downloads\\'
     ## FOR LINUX USERS
-    #folder = os.path.expanduser("~") + '/Downloads/'
+    folder = os.path.expanduser("~") + '/Downloads/'
     answer = input(folder +  "is your default destination, do you want to change that (N/y): ")
 
     if answer == 'y' or answer == 'yes':
@@ -99,8 +126,9 @@ def main():
     batch_url = choose_batch()
     course_number = choose_course(batch_url)
 
+    global download_url 
     download_url = 'https://msc-mu.com/courses/' + course_number
-    download_lectures(download_url, course_number, folder)
+    download_lectures(download_url, folder, download_url)
 
 if __name__ == '__main__':
     print('#'*54)
