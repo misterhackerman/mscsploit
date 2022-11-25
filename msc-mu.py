@@ -23,6 +23,7 @@ def choose_batch():
         [4, 'Nabed', 'https://msc-mu.com/level/14'],
         [5, 'Wareed', 'https://msc-mu.com/level/13']
     ]
+    print('\n')
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1] )
     ui_batch = input('\n[*] Which batch are you?\n\n>> ')
@@ -35,7 +36,7 @@ def choose_batch():
         return batch_url
     except:
         print('\n[*]Invalid Input\n')
-        choose_batch()
+        return choose_batch()
 
 def find_courses(url):
     page = requests.get(url, headers=HEADERS)
@@ -77,7 +78,7 @@ def choose_course(url):
         return course_number
     except:
         print('\n[*]Invalid Input\n')
-        choose_course()
+        return choose_course(url)
 
 def download_lectures(url, folder, folder_url):
     course_page = requests.get(url, headers=HEADERS)
@@ -115,7 +116,7 @@ def choose_folder():
     folder = os.path.expanduser("~") + FOLDER
     ## FOR LINUX USERS
     # folder = os.path.expanduser("~") + '/Downloads/'
-    answer = input(' (' + folder +  ") is your default destination, do you want to change that (N/y): ")
+    answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
 
     if answer == 'y' or answer == 'yes':
         valid_folder = False
@@ -139,11 +140,12 @@ def main():
 
 if __name__ == '__main__':
     print('#'*54)
-    tprint('Welcome!')
-    print('#'*54)
+    tprint('M5C5PL017')
+    print('#'*54, end='\n\n')
+    
     
     main()
-    print('[*] Done...')
+
+    print('\n\n[*] Done...')
     print('[*] Goodbye!')
     input('[*] Press anything to exit')
-
