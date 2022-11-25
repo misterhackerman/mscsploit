@@ -8,6 +8,9 @@ import os
 import re
 import requests
 
+FOLDER = '\\Documents\\Human Systems\\CVS\\' #Beggining with ~
+# FOLDER = '/Documents/' # For linux
+
 HEADERS = headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
         }
@@ -97,18 +100,22 @@ def download_lectures(url, folder, folder_url):
         y += 1
         prev_sub_folder = subject_folder
         if os.path.isfile(folder + subject_folder + '/' + new_name):
-            print(new_name + ' is already downloaded there XD')
+            if new_name[0] == '1' and new_name[1] == '.':
+                print('\n################ ' + subject_folder + ' ################\n')
+            print(' ' + new_name + ' <is already downloaded there XD>')
             continue
         ## FOR LINUX USERS
         # os.system('wget ' + link + ' -O \'' + folder  +'/'+ new_name + '\'')
-        os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
-        # os.system('powershell -c "Invoke-Webrequest -Uri ' + link+ ' -OutFile \'' + folder + new_name + '\'"') 
+        # os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
+        if os.path.isdir(folder+subject_folder) == False:
+            os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
+        os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
          
 def choose_folder():
-    #folder = os.path.expanduser("~") + '\\Downloads\\'
+    folder = os.path.expanduser("~") + FOLDER
     ## FOR LINUX USERS
-    folder = os.path.expanduser("~") + '/Downloads/'
-    answer = input(folder +  "is your default destination, do you want to change that (N/y): ")
+    # folder = os.path.expanduser("~") + '/Downloads/'
+    answer = input(' (' + folder +  ") is your default destination, do you want to change that (N/y): ")
 
     if answer == 'y' or answer == 'yes':
         valid_folder = False
@@ -136,3 +143,7 @@ if __name__ == '__main__':
     print('#'*54)
     
     main()
+    print('[*] Done...')
+    print('[*] Goodbye!')
+    input('[*] Press anything to exit')
+
