@@ -111,6 +111,7 @@ def download_lectures(url, folder, folder_url):
         if os.path.isdir(folder+subject_folder) == False:
             os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
         os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
+        print('[*] Downloaded ' + new_name)
          
 def choose_folder():
     folder = os.path.expanduser("~") + FOLDER
