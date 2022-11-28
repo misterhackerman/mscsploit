@@ -1,5 +1,8 @@
 #!python
 
+# TODOs:
+# make args in mscsploit
+
 from bs4 import BeautifulSoup
 from art import tprint
 
@@ -107,16 +110,16 @@ def download_lectures(url, folder, folder_url):
             continue
         ## FOR LINUX USERS
         # os.system('wget ' + link + ' -O \'' + folder  +'/'+ new_name + '\'')
-        # os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
-        if os.path.isdir(folder+subject_folder) == False:
-            os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
-        os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
+        os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
+        # if os.path.isdir(folder+subject_folder) == False:
+        #     os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
+        # os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
         print('[*] Downloaded ' + new_name)
          
 def choose_folder():
-    folder = os.path.expanduser("~") + FOLDER
+    # folder = os.path.expanduser("~") + FOLDER
     ## FOR LINUX USERS
-    # folder = os.path.expanduser("~") + '/Downloads/'
+    folder = os.path.expanduser("~") + FOLDER
     answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
 
     if answer == 'y' or answer == 'yes':
@@ -144,8 +147,11 @@ if __name__ == '__main__':
     tprint('M5C5PL017')
     print('#'*54, end='\n\n')
     
-    
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\n[*] Good bye!')
+        quit()
 
     print('\n\n[*] Done...')
     print('[*] Goodbye!')
