@@ -33,6 +33,7 @@ def choose_batch():
     print('\n')
     if args.batch:
         batch_url = batches[args.batch - 1][2]
+        print('\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
         return batch_url
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1] )
@@ -132,8 +133,13 @@ def choose_folder():
     ## FOR LINUX USERS
     # folder = os.path.expanduser("~") + FOLDER
     if args.folder:
-        return args.folder
-    answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
+        if os.path.isdir(folder):
+            folder = args.folder   
+            return folder 
+        else:
+            print('\n[*] Folder Not found! ', end='')
+    else:
+        answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
     if answer == 'y' or answer == 'yes':
         valid_folder = False
         while valid_folder == False:
