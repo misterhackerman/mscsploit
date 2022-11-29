@@ -1,15 +1,19 @@
 #!python
 
-# TODOs:
-# make args in mscsploit
-
 from bs4 import BeautifulSoup
 from art import tprint
 
+import argparse
 import html
 import os
 import re
 import requests
+
+parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
+parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
+parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
+parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
+args = parser.parse_args()
 
 FOLDER = '\\Documents\\Human Systems\\CVS\\' #Beggining with ~
 # FOLDER = '/Documents/' # For linux
@@ -27,6 +31,9 @@ def choose_batch():
         [5, 'Wareed', 'https://msc-mu.com/level/13']
     ]
     print('\n')
+    if args.batch:
+        batch_url = batches[args.batch - 1][2]
+        return batch_url
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1] )
     ui_batch = input('\n[*] Which batch are you?\n\n>> ')
@@ -68,6 +75,10 @@ def find_subject_folder(name, doc):
 def choose_course(url):
     global courses
     courses = find_courses(url)
+    if args.course:
+        course_number = str(courses[args.course - 1][2])
+        print('\n[*] Downloading', courses[args.course - 1][1])
+        return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
     ui_course = input('\n[*] Which course would you like to download?\n\n>> ')
@@ -110,18 +121,19 @@ def download_lectures(url, folder, folder_url):
             continue
         ## FOR LINUX USERS
         # os.system('wget ' + link + ' -O \'' + folder  +'/'+ new_name + '\'')
-        os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
-        # if os.path.isdir(folder+subject_folder) == False:
-        #     os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
-        # os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
+        # os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
+        if os.path.isdir(folder+subject_folder) == False:
+            os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
+        os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
         print('[*] Downloaded ' + new_name)
          
 def choose_folder():
-    # folder = os.path.expanduser("~") + FOLDER
-    ## FOR LINUX USERS
     folder = os.path.expanduser("~") + FOLDER
+    ## FOR LINUX USERS
+    # folder = os.path.expanduser("~") + FOLDER
+    if args.folder:
+        return args.folder
     answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
-
     if answer == 'y' or answer == 'yes':
         valid_folder = False
         while valid_folder == False:
