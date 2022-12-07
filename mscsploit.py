@@ -96,22 +96,23 @@ def choose_course(url):
         return choose_course(url)
 
 def download_lectures(url, folder, folder_url):
+    extention = '.pdf'
     course_page = requests.get(url, headers=HEADERS)
-    links = re.findall('<a href="(.*)">.*.pdf</a>', course_page.content.decode())
-    names = re.findall('<a href=".*">(.*).pdf</a>', course_page.content.decode())
+    links = re.findall('<a href="(.*)">.*' + extention + '</a>', course_page.content.decode())
+    names = re.findall('<a href=".*">(.*)' + extention + '</a>', course_page.content.decode())
     page = requests.get(folder_url, headers=HEADERS)
     doc = BeautifulSoup(page.text, 'html.parser')
     x=0
     y=0
     prev_sub_folder = None
     for link in links:
-        link = link.strip() + '.pdf'
-        subject_folder = find_subject_folder(names[x] + '.pdf', doc)
+        link = link.strip() + extention
+        subject_folder = find_subject_folder(names[x] + extention, doc)
         if subject_folder == prev_sub_folder:
             pass
         else:
             y = 0 
-        new_name = str(y+1) + '. ' + names[x] + '.pdf'
+        new_name = str(y+1) + '. ' + names[x] + extention
         x += 1
         y += 1
         prev_sub_folder = subject_folder
