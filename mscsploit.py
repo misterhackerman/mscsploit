@@ -69,6 +69,8 @@ def find_subject_folder(name, doc):
     else:
         name = name.strip('&#39;')
         name = html.unescape(name)
+    if '..pdf' in name:
+        name = name.strip('..pdf') + '. pdf'
     folder_source = doc.find_all("a", string=name)[0].parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent
     folder = re.findall('''</i>
                     (.*)
@@ -111,10 +113,8 @@ def download_lectures(url, folder, folder_url):
     for link in links:
         link = link.strip() + extention
         subject_folder = find_subject_folder(names[x] + extention, doc)
-        if subject_folder == prev_sub_folder:
-            pass
-        else:
-            y = 0 
+        if subject_folder != prev_sub_folder:
+            y=0
         new_name = str(y+1) + '. ' + names[x] + extention
         x += 1
         y += 1
