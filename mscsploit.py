@@ -15,7 +15,7 @@ parser.add_argument('-c', '--course', type=int, metavar='', help='to specify cou
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
 
-FOLDER = '\\Documents\\Human Systems\\CVS\\' #Beggining with ~
+FOLDER = '\\Documents\\Human Systems\\PNS\\' #Beggining with ~
 # FOLDER = '/Documents/' # For linux
 
 HEADERS = headers = {
@@ -137,22 +137,23 @@ def choose_folder():
     ## FOR LINUX USERS
     # folder = os.path.expanduser("~") + FOLDER
     if args.folder:
-        if os.path.isdir(folder):
+        if os.path.isdir(args.folder):
             folder = args.folder   
             return folder 
         else:
             print('\n[*] Folder Not found! ', end='')
+            quit()
     else:
         answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
-    if answer == 'y' or answer == 'yes':
-        valid_folder = False
-        while valid_folder == False:
-            ui_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
-            if os.path.isdir(ui_folder):
-                folder = ui_folder
-                valid_folder = True
-            else:
-                print('\n[*] Folder Not found! ', end='')
+        if answer == 'y' or answer == 'yes':
+            valid_folder = False
+            while valid_folder == False:
+                ui_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
+                if os.path.isdir(ui_folder):
+                    folder = ui_folder
+                    valid_folder = True
+                else:
+                    print('\n[*] Folder Not found! ', end='')
     return folder
 
 def main():
