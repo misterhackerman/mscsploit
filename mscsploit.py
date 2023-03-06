@@ -129,7 +129,7 @@ def download_lectures(url, folder, folder_url):
                 os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
             os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
         else:
-            os.system('curl ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
+            os.system('curl -s ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
         print('[*] Downloaded ' + new_name)
          
 def choose_folder():
