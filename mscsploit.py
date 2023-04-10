@@ -1,7 +1,8 @@
-#!python
+#!/usr/bin/python3
 
 from bs4 import BeautifulSoup
 from art import tprint
+from colorama import Fore
 
 import argparse
 import html
@@ -15,8 +16,8 @@ parser.add_argument('-c', '--course', type=int, metavar='', help='to specify cou
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
 
-FOLDER = '\\Documents\\Human Systems\\PNS\\' #Beggining with ~
-# FOLDER = '/Documents/' # For linux
+#FOLDER = '\\Documents\\Human Systems\\CVS\\' #Beggining with ~
+FOLDER = '/Documents/med/' # For linux
 
 HEADERS = headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
@@ -37,13 +38,13 @@ def choose_batch():
         return batch_url
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1] )
-    ui_batch = input('\n[*] Which batch are you?\n\n>> ')
+    selected_batch = input('\n[*] Which batch are you?\n\n>> ')
     try:
-        ui_batch = int(ui_batch)
+        selected_batch = int(selected_batch)
         for batch in batches:
-            if ui_batch == batch[0]:
+            if selected_batch == batch[0]:
                 print('\n[*] Searching', batch[1] + '\'s batch...\n')
-        batch_url = batches[ui_batch - 1][2]
+        batch_url = batches[selected_batch - 1][2]
         return batch_url
     except:
         print('\n[*]Invalid Input\n')
@@ -87,12 +88,12 @@ def choose_course(url):
         return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
-    ui_course = input('\n[*] Which course would you like to download?\n\n>> ')
+    selected_course = input('\n[*] Which course would you like to download?\n\n>> ')
     try:
-        ui_course = int(ui_course)
+        selected_course = int(selected_course)
         for course in courses:
-            if ui_course == course[0]:
-                list_index = ui_course - 1
+            if selected_course == course[0]:
+                list_index = selected_course - 1
                 print('\n[*] Downloading', course[1])
         course_number = str(courses[list_index][2])
         return course_number
@@ -134,9 +135,9 @@ def download_lectures(url, folder, folder_url):
          
 def choose_folder():
     folder = os.path.expanduser("~") + FOLDER
-    ## FOR LINUX USERS
-    # folder = os.path.expanduser("~") + FOLDER
     if args.folder:
+        if '~' in args.folder:
+            args.folder = os.path.expanduser(args.folder)
         if os.path.isdir(args.folder):
             folder = args.folder   
             return folder 
@@ -148,9 +149,10 @@ def choose_folder():
         if answer == 'y' or answer == 'yes':
             valid_folder = False
             while valid_folder == False:
-                ui_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
-                if os.path.isdir(ui_folder):
-                    folder = ui_folder
+                selected_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
+                selected_folder = os.path.expanduser(selected_folder)
+                if os.path.isdir(selected_folder):
+                    folder = selected_folder
                     valid_folder = True
                 else:
                     print('\n[*] Folder Not found! ', end='')
@@ -161,13 +163,26 @@ def main():
     batch_url = choose_batch()
     course_number = choose_course(batch_url)
 
+    # needs revision to make a folder inside the parent folder
+    # print(folder)
+    # print(course_number)
+    # print(courses)
+    # for course in courses:
+    #     print(str(course[1]) + str(course[2]) + str(course[0]))
+    #     if course_number == course[2]:
+    #         if not os.path.isdir(folder + course[1]):
+    #             os.system('mkdir ' + folder + course[1] + )
+    # input('fuck you just do ^C, OK?')
+
     global download_url 
     download_url = 'https://msc-mu.com/courses/' + course_number
     download_lectures(download_url, folder, download_url)
 
 if __name__ == '__main__':
-    print('#'*54)
+    print(Fore.CYAN + '#'*54)
+    print(Fore.RED)
     tprint('M5C5PL017')
+    print(Fore.CYAN)
     print('#'*54, end='\n\n')
     
     try:
