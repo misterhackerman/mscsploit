@@ -70,8 +70,8 @@ def find_subject_folder(name, doc):
     else:
         name = name.strip('&#39;')
         name = html.unescape(name)
-    if '..pdf' in name:
-        name = name.strip('..pdf') + '. pdf'
+#    if '..pdf' in name:
+#        name = name.strip('..pdf') + '. pdf'
     folder_source = doc.find_all("a", string=name)[0].parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent
     folder = re.findall('''</i>
                     (.*)
