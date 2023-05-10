@@ -17,7 +17,7 @@ parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify des
 args = parser.parse_args()
 
 #FOLDER = '\\Documents\\Human Systems\\CVS\\' #Beggining with ~
-FOLDER = '/Documents/med/' # For linux
+FOLDER = '/documents/med/' # For linux
 
 HEADERS = headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
@@ -34,7 +34,7 @@ def choose_batch():
     print('\n')
     if args.batch:
         batch_url = batches[args.batch - 1][2]
-        print('\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
+        print(Fore.GREEN + '\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
         return batch_url
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1] )
@@ -55,13 +55,11 @@ def find_courses(url):
     doc = BeautifulSoup(page.text, 'html.parser')
     subject = doc.find_all('h6')
     courses = []
-    x = 0
-    for i in subject:
-        x += 1
+    for x, i in enumerate(subject):
         parent = i.parent.parent.parent
         course_number = re.findall('href="https://msc-mu.com/courses/(.*)">', parent.decode())[0]
         course_name = i.string.strip()
-        courses.append([x, course_name, course_number])
+        courses.append([x + 1, course_name, course_number])
     return courses
 
 def find_subject_folder(name, doc):
@@ -85,6 +83,7 @@ def choose_course(url):
     if args.course:
         course_number = str(courses[args.course - 1][2])
         print('\n[*] Downloading', courses[args.course - 1][1])
+        print(Fore.RESET)
         return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
@@ -163,7 +162,7 @@ def main():
     batch_url = choose_batch()
     course_number = choose_course(batch_url)
 
-    # needs revision to make a folder inside the parent folder
+    # needs revision to make a folder inside the file
     # print(folder)
     # print(course_number)
     # print(courses)
@@ -181,9 +180,8 @@ def main():
 if __name__ == '__main__':
     print(Fore.CYAN + '#'*54)
     print(Fore.RED)
-    tprint('M5C5PL017')
-    print(Fore.CYAN)
-    print('#'*54, end='\n\n')
+    tprint('K1DN3Ys')
+    print(Fore.CYAN + '#'*54, end='\n')
     
     try:
         main()
@@ -191,6 +189,6 @@ if __name__ == '__main__':
         print('\n[*] Good bye!')
         quit()
 
-    print('\n\n[*] Done...')
+    print(Fore.GREEN + '\n\n[*] Done...')
     print('[*] Goodbye!')
-    input('[*] Press anything to exit')
+    input('[*] Press anything to' + Fore.RED + ' exit')
