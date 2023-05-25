@@ -1,7 +1,18 @@
 # MSCSPLOIT
 API to download any course from msc-mu.com
 
-# USAGE
+## Dependencies
+
+*for widnows users:*
+python3
+powershell
+
+*for linux users:*
+curl
+
++ python requirements in requirements.txt file
+
+## Installation
 1. clone the repo using `git clone`
 2. change directory into mscsploit 
 `$ cd mscsploit`
