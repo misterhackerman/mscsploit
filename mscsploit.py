@@ -10,6 +10,11 @@ import os
 import re
 import requests
 
+# TODO 
+#
+# 1. create a folder with the course name, and download the subjects inside it.
+# 2. create a folder named subject-extra for each subject that is repeated. 
+
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
 parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
@@ -100,13 +105,12 @@ def choose_course(url):
         print('\n[*]Invalid Input\n')
         return choose_course(url)
 
-def download_lectures(url, folder, folder_url):
+def download_lectures(url, folder):
     extention = '.pdf'
     course_page = requests.get(url, headers=HEADERS)
     links = re.findall('<a href="(.*)">.*' + extention + '</a>', course_page.content.decode())
     names = re.findall('<a href=".*">(.*)' + extention + '</a>', course_page.content.decode())
-    page = requests.get(folder_url, headers=HEADERS)
-    doc = BeautifulSoup(page.text, 'html.parser')
+    doc = BeautifulSoup(course_page.text, 'html.parser')
     x=0
     y=0
     prev_sub_folder = None
@@ -149,6 +153,9 @@ def choose_folder():
             valid_folder = False
             while valid_folder == False:
                 selected_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
+                # Adds a seperator at the end if the user didn't
+                if not selected_folder.endswith(os.path.sep):
+                    selected_folder = selected_folder + os.path.sep
                 selected_folder = os.path.expanduser(selected_folder)
                 if os.path.isdir(selected_folder):
                     folder = selected_folder
@@ -161,26 +168,14 @@ def main():
     folder = choose_folder()
     batch_url = choose_batch()
     course_number = choose_course(batch_url)
-
-    # needs revision to make a folder inside the file
-    # print(folder)
-    # print(course_number)
-    # print(courses)
-    # for course in courses:
-    #     print(str(course[1]) + str(course[2]) + str(course[0]))
-    #     if course_number == course[2]:
-    #         if not os.path.isdir(folder + course[1]):
-    #             os.system('mkdir ' + folder + course[1] + )
-    # input('fuck you just do ^C, OK?')
-
     global download_url 
     download_url = 'https://msc-mu.com/courses/' + course_number
-    download_lectures(download_url, folder, download_url)
+    download_lectures(download_url, folder)
 
 if __name__ == '__main__':
     print(Fore.CYAN + '#'*54)
     print(Fore.RED)
-    tprint('K1DN3Ys')
+    tprint('RBCs')
     print(Fore.CYAN + '#'*54, end='\n')
     
     try:
