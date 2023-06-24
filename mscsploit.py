@@ -12,8 +12,8 @@ import requests
 
 # TODO 
 #
-# 1. create a folder with the course name, and download the subjects inside it.
-# 2. create a folder named subject-extra for each subject that is repeated. 
+# Create a folder named subject-extra for each subject that is repeated. 
+# use open and write instead of downloading this way.
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
@@ -73,8 +73,6 @@ def find_subject_folder(name, doc):
     else:
         name = name.strip('&#39;')
         name = html.unescape(name)
-#    if '..pdf' in name:
-#        name = name.strip('..pdf') + '. pdf'
     folder_source = doc.find_all("a", string=name)[0].parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent
     folder = re.findall('''</i>
                     (.*)
@@ -82,9 +80,7 @@ def find_subject_folder(name, doc):
                 </h6>''', folder_source.decode())
     return folder[0]
 
-def choose_course(url):
-    global courses
-    courses = find_courses(url)
+def choose_course(courses):
     if args.course:
         course_number = str(courses[args.course - 1][2])
         print('\n[*] Downloading', courses[args.course - 1][1])
@@ -103,7 +99,7 @@ def choose_course(url):
         return course_number
     except:
         print('\n[*]Invalid Input\n')
-        return choose_course(url)
+        return choose_course(courses)
 
 def download_lectures(url, folder):
     extention = '.pdf'
@@ -135,6 +131,8 @@ def download_lectures(url, folder):
         else:
             os.system('curl -s ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
         print('[*] Downloaded ' + new_name)
+
+# If not specified, prompt the user to input a folder
          
 def choose_folder():
     folder = os.path.expanduser("~") + FOLDER
@@ -164,11 +162,25 @@ def choose_folder():
                     print('\n[*] Folder Not found! ', end='')
     return folder
 
+# Gets the name of the course from the course number, and makes a folder with that name
+
+def make_course_folder(courses, index, folder):
+    for course in courses:
+        if course[2] == index:
+            course_name = course[1]
+            break
+    new_folder = folder + os.path.sep + course_name + os.path.sep
+    if not os.path.isdir(new_folder):
+        os.mkdir(new_folder)
+    folder = new_folder
+    return folder
+
 def main():
     folder = choose_folder()
     batch_url = choose_batch()
-    course_number = choose_course(batch_url)
-    global download_url 
+    courses = find_courses(batch_url)
+    course_number = choose_course(courses)
+    folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
     download_lectures(download_url, folder)
 
