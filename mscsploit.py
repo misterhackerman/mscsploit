@@ -120,7 +120,7 @@ def download_lectures(url, folder):
         if os.path.isfile(file_path):
             if new_name.startswith('1.'):
                 print('\n################ ' + subject_folder + ' ################\n')
-            print( new_name + ' <is already downloaded there XD>')
+            print( Fore.MAGENTA + new_name + ' <is already downloaded there XD>' + Fore.RESET)
             continue
         if not os.path.isdir(folder + subject_folder):
             os.makedirs(folder + subject_folder)
@@ -145,8 +145,8 @@ def choose_folder():
             print('\n[*] Folder Not found! ', end='')
             quit()
     else:
-        answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to change that (N/y): ")
-        if answer == 'y' or answer == 'yes':
+        answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to keep that (Y/n): ")
+        if answer == 'n' or answer == 'no' or answer == 'N':
             valid_folder = False
             while valid_folder == False:
                 selected_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
