@@ -13,7 +13,6 @@ import requests
 # TODO 
 #
 # Create a folder named subject-extra for each subject that is repeated. 
-# use open and write instead of downloading this way.
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
@@ -107,29 +106,30 @@ def download_lectures(url, folder):
     links = re.findall('<a href="(.*)">.*' + extension + '</a>', course_page.content.decode())
     names = re.findall('<a href=".*">(.*)' + extension + '</a>', course_page.content.decode())
     doc = BeautifulSoup(course_page.text, 'html.parser')
-    x=0
-    y=0
+    x = 0
+    y = 0
     prev_sub_folder = None
     for link in links:
         link = link.strip() + extension
         subject_folder = find_subject_folder(names[x] + extension, doc)
         if subject_folder != prev_sub_folder:
-            y=0
-        new_name = str(y+1) + '. ' + names[x] + extension
+            y = 0
+        new_name = str(y + 1) + '. ' + names[x] + extension
         x += 1
         y += 1
         prev_sub_folder = subject_folder
-        if os.path.isfile(folder + subject_folder + '/' + new_name):
-            if new_name[0] == '1' and new_name[1] == '.':
+        file_path = folder + subject_folder + '/' + new_name
+        if os.path.isfile(file_path):
+            if new_name.startswith('1.'):
                 print('\n################ ' + subject_folder + ' ################\n')
             print(' ' + new_name + ' <is already downloaded there XD>')
             continue
-        if os.name == 'nt':
-            if os.path.isdir(folder+subject_folder) == False:
-                os.system('powershell -c "mkdir \'' + folder + subject_folder + '\'"')
-            os.system('powershell -c "Invoke-Webrequest -Uri ' + link + ' -OutFile \'' + folder + subject_folder + '\\' + new_name + '\'"') 
-        else:
-            os.system('curl -s ' + link + ' --create-dirs -o \'' + folder + subject_folder +'/'+ new_name + '\'')
+        if not os.path.isdir(folder + subject_folder):
+            os.makedirs(folder + subject_folder)
+        
+        response = requests.get(link, headers=HEADERS)
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
         print('[*] Downloaded ' + new_name)
 
 # If not specified, prompt the user to input a folder
@@ -193,7 +193,8 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print('\n[*] Good bye!')
+        print(Fore.RED + '\n[*] KeyboardInterrupt')
+        print(Fore.GREEN + '[*] Good bye!')
         quit()
 
     print(Fore.GREEN + '\n\n[*] Done...')
