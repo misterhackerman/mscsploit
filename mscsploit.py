@@ -10,10 +10,6 @@ import os
 import re
 import requests
 
-# TODO 
-#
-# Create a folder named subject-extra for each subject that is repeated. 
-
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
 parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
@@ -106,26 +102,29 @@ def download_lectures(url, folder):
     links = re.findall('<a href="(.*)">.*' + extension + '</a>', course_page.content.decode())
     names = re.findall('<a href=".*">(.*)' + extension + '</a>', course_page.content.decode())
     doc = BeautifulSoup(course_page.text, 'html.parser')
-    x = 0
     y = 0
     prev_sub_folder = None
-    for link in links:
+    subject_folders_list =[]
+    for x, link in enumerate(links):
         link = link.strip() + extension
         subject_folder = find_subject_folder(names[x] + extension, doc)
         if subject_folder != prev_sub_folder:
+            if subject_folder in subject_folders_list:
+                subject_folder = subject_folder + '-extras'
             y = 0
         new_name = str(y + 1) + '. ' + names[x] + extension
-        x += 1
         y += 1
+        subject_folders_list.append(subject_folder)
         prev_sub_folder = subject_folder
         file_path = folder + subject_folder + '/' + new_name
         if os.path.isfile(file_path):
             if new_name.startswith('1.'):
                 print('\n################ ' + subject_folder + ' ################\n')
-            print(' ' + new_name + ' <is already downloaded there XD>')
+            print( new_name + ' <is already downloaded there XD>')
             continue
         if not os.path.isdir(folder + subject_folder):
             os.makedirs(folder + subject_folder)
+            print('\n################ ' + subject_folder + ' ################\n')
         
         response = requests.get(link, headers=HEADERS)
         with open(file_path, 'wb') as file:
