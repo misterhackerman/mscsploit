@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 from bs4 import BeautifulSoup
-from art import tprint
 from colorama import Fore
 
 import argparse
@@ -25,11 +24,13 @@ HEADERS = headers = {
 
 def choose_batch():
     batches = [
-	    [1, '2022', 'https://msc-mu.com/level/17'],
+        [1, '2022', 'https://msc-mu.com/level/17'],
         [2, 'Rou7', 'https://msc-mu.com/level/16'],
         [3, 'Wateen', 'https://msc-mu.com/level/15'],
         [4, 'Nabed', 'https://msc-mu.com/level/14'],
-        [5, 'Wareed', 'https://msc-mu.com/level/13']
+        [5, 'Wareed', 'https://msc-mu.com/level/13'],
+        [6, 'Minors', 'https://msc-mu.com/level/10'],
+        [7, 'Majors', 'https://msc-mu.com/level/9' ]
     ]
     print('\n')
     if args.batch:
@@ -84,6 +85,7 @@ def choose_course(courses):
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
     selected_course = input('\n[*] Which course would you like to download?\n\n>> ')
+    list_index = None
     try:
         selected_course = int(selected_course)
         for course in courses:
@@ -97,50 +99,52 @@ def choose_course(courses):
         return choose_course(courses)
 
 def download_lectures(url, folder):
-    extension = '.pdf'
     course_page = requests.get(url, headers=HEADERS)
-    links = re.findall('<a href="(.*)">.*' + extension + '</a>', course_page.content.decode())
-    names = re.findall('<a href=".*">(.*)' + extension + '</a>', course_page.content.decode())
-    doc = BeautifulSoup(course_page.text, 'html.parser')
-    y = 0
-    prev_sub_folder = None
-    subject_folders_list =[]
-    for x, link in enumerate(links):
-        link = link.strip() + extension
-        subject_folder = find_subject_folder(names[x] + extension, doc)
-        if subject_folder != prev_sub_folder:
-            if subject_folder in subject_folders_list:
-                subject_folder = subject_folder + '-extras'
-            y = 0
-        new_name = str(y + 1) + '. ' + names[x] + extension
-        y += 1
-        subject_folders_list.append(subject_folder)
-        prev_sub_folder = subject_folder
-        file_path = folder + subject_folder + '/' + new_name
-        if os.path.isfile(file_path):
-            if new_name.startswith('1.'):
+    extensions = ['.pdf', '.pptx']
+    for extension in extensions:
+        links = re.findall('<a href="(.*)">.*' + extension + '</a>', course_page.content.decode())
+        names = re.findall('<a href=".*">(.*)' + extension + '</a>', course_page.content.decode())
+        doc = BeautifulSoup(course_page.text, 'html.parser')
+        y = 0
+        prev_sub_folder = None
+        subject_folders_list =[]
+        for x, link in enumerate(links):
+            link = link.strip() + extension
+            subject_folder = find_subject_folder(names[x] + extension, doc)
+            if subject_folder != prev_sub_folder:
+                if subject_folder in subject_folders_list:
+                    subject_folder = subject_folder + '-extras'
+                y = 0
+            new_name = str(y + 1) + '. ' + names[x] + extension
+            y += 1
+            subject_folders_list.append(subject_folder)
+            prev_sub_folder = subject_folder
+            file_path = folder + subject_folder + '/' + new_name
+            if os.path.isfile(file_path):
+                if new_name.startswith('1.'):
+                    print('\n################ ' + subject_folder + ' ################\n')
+                print( Fore.MAGENTA + new_name + ' <is already downloaded there XD>' + Fore.RESET)
+                continue
+            if not os.path.isdir(folder + subject_folder):
+                os.makedirs(folder + subject_folder)
                 print('\n################ ' + subject_folder + ' ################\n')
-            print( Fore.MAGENTA + new_name + ' <is already downloaded there XD>' + Fore.RESET)
-            continue
-        if not os.path.isdir(folder + subject_folder):
-            os.makedirs(folder + subject_folder)
-            print('\n################ ' + subject_folder + ' ################\n')
-        
-        response = requests.get(link, headers=HEADERS)
-        with open(file_path, 'wb') as file:
-            file.write(response.content)
-        print('[*] Downloaded ' + new_name)
+
+            response = requests.get(link, headers=HEADERS)
+            with open(file_path, 'wb') as file:
+                file.write(response.content)
+            print('[*] Downloaded ' + new_name)
+
 
 # If not specified, prompt the user to input a folder
-         
+
 def choose_folder():
     folder = os.path.expanduser("~") + FOLDER
     if args.folder:
         if '~' in args.folder:
             args.folder = os.path.expanduser(args.folder)
         if os.path.isdir(args.folder):
-            folder = args.folder   
-            return folder 
+            folder = args.folder
+            return folder
         else:
             print('\n[*] Folder Not found! ', end='')
             quit()
@@ -164,6 +168,7 @@ def choose_folder():
 # Gets the name of the course from the course number, and makes a folder with that name
 
 def make_course_folder(courses, index, folder):
+    course_name = None
     for course in courses:
         if course[2] == index:
             course_name = course[1]
@@ -184,11 +189,8 @@ def main():
     download_lectures(download_url, folder)
 
 if __name__ == '__main__':
-    print(Fore.CYAN + '#'*54)
-    print(Fore.RED)
-    tprint('RBCs')
-    print(Fore.CYAN + '#'*54, end='\n')
-    
+    print(Fore.CYAN + '#'*54 + Fore.RESET)
+
     try:
         main()
     except KeyboardInterrupt:
