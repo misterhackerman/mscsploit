@@ -1,38 +1,144 @@
 #!/usr/bin/python3
 
 from bs4 import BeautifulSoup
+from colorama import Fore
 import requests
+import argparse
+import re
+import os
+
+parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
+parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
+parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
+parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
+args = parser.parse_args()
+
+FOLDER = '/test'
 
 HEADERS = headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
 
 
-download_url = 'https://msc-mu.com/courses/113'
-course_page = requests.get(download_url, headers=HEADERS)
-soup = BeautifulSoup(course_page.text, 'html.parser')
+def choose_batch():
+    batches = [
+        [1, 'Athar', 'https://msc-mu.com/level/17'],
+        [2, 'Rou7', 'https://msc-mu.com/level/16'],
+        [3, 'Wateen', 'https://msc-mu.com/level/15'],
+        [4, 'Nabed', 'https://msc-mu.com/level/14'],
+        [5, 'Wareed', 'https://msc-mu.com/level/13'],
+        [6, 'Minors', 'https://msc-mu.com/level/10'],
+        [7, 'Majors', 'https://msc-mu.com/level/9']
+    ]
+    print('\n')
+    if args.batch:
+        batch_url = batches[args.batch - 1][2]
+        print(Fore.GREEN + '\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
+        return batch_url
+    for batch in batches:
+        print(str(batch[0]) + ') ' + batch[1])
+    selected_batch = input('\n[*] Which batch are you?\n\n>> ')
+    try:
+        selected_batch = int(selected_batch)
+        for batch in batches:
+            if selected_batch == batch[0]:
+                print('\n[*] Searching', batch[1] + '\'s batch...\n')
+        batch_url = batches[selected_batch - 1][2]
+        return batch_url
+    except:
+        print('\n[*]Invalid Input\n')
+        return choose_batch()
 
 
-def create_nav_links_dictionary():
-    nav_dict = {}
+def find_courses(url):
+    page = requests.get(url, headers=HEADERS)
+    doc = BeautifulSoup(page.text, 'html.parser')
+    subject = doc.find_all('h6')
+    courses = []
+    for x, i in enumerate(subject):
+        parent = i.parent.parent.parent
+        course_number = re.findall('href="https://msc-mu.com/courses/(.*)">', parent.decode())[0]
+        course_name = i.string.strip()
+        courses.append([x + 1, course_name, course_number])
+    return courses
+
+
+def choose_course(courses):
+    if args.course:
+        course_number = str(courses[args.course - 1][2])
+        print('\n[*] Downloading', courses[args.course - 1][1])
+        print(Fore.RESET)
+        return course_number
+    for course in courses:
+        print(str(course[0]) + ') ' + course[1])
+    selected_course = input('\n[*] Which course would you like to download?\n\n>> ')
+    list_index = None
+    try:
+        selected_course = int(selected_course)
+        for course in courses:
+            if selected_course == course[0]:
+                list_index = selected_course - 1
+                print('\n[*] Downloading', course[1])
+        course_number = str(courses[list_index][2])
+        return course_number
+    except:
+        print('\n[*]Invalid Input\n')
+        return choose_course(courses)
+
+
+def choose_folder():
+    folder = os.path.expanduser("~") + FOLDER
+    if args.folder:
+        if '~' in args.folder:
+            args.folder = os.path.expanduser(args.folder)
+        if os.path.isdir(args.folder):
+            folder = args.folder
+            if not folder[-1] == os.sep:
+                folder = folder + os.sep
+            return folder
+        else:
+            print('\n[*] Folder Not found! ', end='')
+            quit()
+    else:
+        answer = input('[*] Your default destination is ' + folder + "\n[*] Do you want to keep that (Y/n): ")
+        if answer == 'n' or answer == 'no' or answer == 'N':
+            valid_folder = False
+            while not valid_folder:
+                selected_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
+                # Adds a seperator at the end if the user didn't
+                if not selected_folder.endswith(os.path.sep):
+                    selected_folder = selected_folder + os.path.sep
+                selected_folder = os.path.expanduser(selected_folder)
+                if os.path.isdir(selected_folder):
+                    folder = selected_folder
+                    valid_folder = True
+                else:
+                    print('\n[*] Folder Not found! ', end='')
+    if not folder[-1] == os.sep:
+        folder = folder + os.sep
+    return folder
+
+
+def create_nav_links_dictionary(soup):
+    navigate_dict = {}
     nav_links = soup.find_all('li', attrs={"class": "nav-item"})
-    for nav_link in nav_links:
-        if nav_link.h5:
-            nav_name = nav_link.h5.text.strip()
-            nav_number = nav_link.a.get('aria-controls')
-            nav_dict[nav_number] = nav_name
-    return nav_dict
+    for navigate_link in nav_links:
+        if navigate_link.h5:
+            nav_name = navigate_link.h5.text.strip()
+            nav_number = navigate_link.a.get('aria-controls')
+            navigate_dict[nav_number] = nav_name
+    return navigate_dict
 
 
-def find_files_paths_and_links(navigation_dict):
-    file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.pptx' in text)
-    files_dictionary = {}
+def find_files_paths_and_links(navigation_dict, soup):
+    file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.pptx' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text)
+    files_list = []
     path = []
     associated_nav_link_id = ''
     for file_tag in file_tags:
         current_tag = file_tag
         if not current_tag:
-            print('no pdf files!')
+            print('no pdf or pptx files!')
             quit()
         while True:
             current_tag = current_tag.parent
@@ -44,23 +150,53 @@ def find_files_paths_and_links(navigation_dict):
                 break
         path.append(navigation_dict[associated_nav_link_id])
         path.reverse()
-        path.append(file_tag.text)
-        file_path = "/".join(path)
+        basename = file_tag.text
+        file_path = "/".join(path) + os.sep
         path.clear()
 
         file_link = file_tag.get('href')
-        files_dictionary[file_path] = file_link
-    return files_dictionary
+        files_list.append([file_path, file_link, basename])
+    return files_list
 
 
-def download_from_dict(path_link_dict):
-    for path in path_link_dict:
-        response = requests.get(path_link_dict[path], headers=HEADERS)
-        with open(path, 'wb') as file:
+def download_from_dict(path_link_dict, folder):
+    for path, link, name in path_link_dict:
+
+        if os.path.isfile(folder + path + name):
+            print(Fore.MAGENTA + path + name + ' <is already downloaded there XD>' + Fore.RESET)
+            continue
+
+        if not os.path.isdir(folder + path):
+            os.makedirs(folder + path)
+
+        response = requests.get(link, headers=HEADERS)
+        with open(folder + path + name, 'wb') as file:
             file.write(response.content)
-        print('[*] Downloaded ' + path)
+        print('[*] Downloaded ' + name)
+
+
+def main():
+    folder = choose_folder()
+    batch_url = choose_batch()
+    courses = find_courses(batch_url)
+    course_number = choose_course(courses)
+    download_url = 'https://msc-mu.com/courses/' + course_number
+    course_page = requests.get(download_url, headers=HEADERS)
+    soup = BeautifulSoup(course_page.text, 'html.parser')
+
+    nav_dict = create_nav_links_dictionary(soup)
+    file_dict = find_files_paths_and_links(nav_dict, soup)
+    download_from_dict(file_dict, folder)
 
 
 if __name__ == '__main__':
-    dictionary = create_nav_links_dictionary()
-    find_files_paths_and_links(dictionary)
+    print(Fore.CYAN + '#'*54 + Fore.RESET)
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(Fore.RED + '\n[*] KeyboardInterrupt')
+        print(Fore.GREEN + '[*] Good bye!')
+        quit()
+    print(Fore.GREEN + '\n\n[*] Done...')
+    print('[*] Goodbye!')
+    input('[*] Press anything to' + Fore.RED + ' exit')
