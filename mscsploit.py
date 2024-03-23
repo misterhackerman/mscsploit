@@ -2,12 +2,10 @@
 
 from bs4 import BeautifulSoup
 from colorama import Fore
-
-import argparse
-import html
-import os
-import re
 import requests
+import argparse
+import re
+import os
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
@@ -15,22 +13,22 @@ parser.add_argument('-c', '--course', type=int, metavar='', help='to specify cou
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
 
-#FOLDER = '\\Documents\\Human Systems\\CVS\\' #Beggining with ~
-FOLDER = '/documents/med/' # For linux
+FOLDER = '/dox/med'
 
 HEADERS = headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
+
 
 def choose_batch():
     batches = [
-        [1, '2022', 'https://msc-mu.com/level/17'],
+        [1, 'Athar', 'https://msc-mu.com/level/17'],
         [2, 'Rou7', 'https://msc-mu.com/level/16'],
         [3, 'Wateen', 'https://msc-mu.com/level/15'],
         [4, 'Nabed', 'https://msc-mu.com/level/14'],
         [5, 'Wareed', 'https://msc-mu.com/level/13'],
         [6, 'Minors', 'https://msc-mu.com/level/10'],
-        [7, 'Majors', 'https://msc-mu.com/level/9' ]
+        [7, 'Majors', 'https://msc-mu.com/level/9']
     ]
     print('\n')
     if args.batch:
@@ -38,7 +36,7 @@ def choose_batch():
         print(Fore.GREEN + '\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
         return batch_url
     for batch in batches:
-        print(str(batch[0]) + ') ' + batch[1] )
+        print(str(batch[0]) + ') ' + batch[1])
     selected_batch = input('\n[*] Which batch are you?\n\n>> ')
     try:
         selected_batch = int(selected_batch)
@@ -50,6 +48,7 @@ def choose_batch():
     except:
         print('\n[*]Invalid Input\n')
         return choose_batch()
+
 
 def find_courses(url):
     page = requests.get(url, headers=HEADERS)
@@ -63,18 +62,6 @@ def find_courses(url):
         courses.append([x + 1, course_name, course_number])
     return courses
 
-def find_subject_folder(name, doc):
-    if '&#39;' not in name:
-        name = html.unescape(name)
-    else:
-        name = name.strip('&#39;')
-        name = html.unescape(name)
-    folder_source = doc.find_all("a", string=name)[0].parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent.parent
-    folder = re.findall('''</i>
-                    (.*)
-
-                </h6>''', folder_source.decode())
-    return folder[0]
 
 def choose_course(courses):
     if args.course:
@@ -98,44 +85,6 @@ def choose_course(courses):
         print('\n[*]Invalid Input\n')
         return choose_course(courses)
 
-def download_lectures(url, folder):
-    course_page = requests.get(url, headers=HEADERS)
-    extensions = ['.pdf', '.pptx']
-    for extension in extensions:
-        links = re.findall('<a href="(.*)">.*' + extension + '</a>', course_page.content.decode())
-        names = re.findall('<a href=".*">(.*)' + extension + '</a>', course_page.content.decode())
-        doc = BeautifulSoup(course_page.text, 'html.parser')
-        y = 0
-        prev_sub_folder = None
-        subject_folders_list =[]
-        for x, link in enumerate(links):
-            link = link.strip() + extension
-            subject_folder = find_subject_folder(names[x] + extension, doc)
-            if subject_folder != prev_sub_folder:
-                if subject_folder in subject_folders_list:
-                    subject_folder = subject_folder + '-extras'
-                y = 0
-            new_name = str(y + 1) + '. ' + names[x] + extension
-            y += 1
-            subject_folders_list.append(subject_folder)
-            prev_sub_folder = subject_folder
-            file_path = folder + subject_folder + '/' + new_name
-            if os.path.isfile(file_path):
-                if new_name.startswith('1.'):
-                    print('\n################ ' + subject_folder + ' ################\n')
-                print( Fore.MAGENTA + new_name + ' <is already downloaded there XD>' + Fore.RESET)
-                continue
-            if not os.path.isdir(folder + subject_folder):
-                os.makedirs(folder + subject_folder)
-                print('\n################ ' + subject_folder + ' ################\n')
-
-            response = requests.get(link, headers=HEADERS)
-            with open(file_path, 'wb') as file:
-                file.write(response.content)
-            print('[*] Downloaded ' + new_name)
-
-
-# If not specified, prompt the user to input a folder
 
 def choose_folder():
     folder = os.path.expanduser("~") + FOLDER
@@ -144,15 +93,17 @@ def choose_folder():
             args.folder = os.path.expanduser(args.folder)
         if os.path.isdir(args.folder):
             folder = args.folder
+            if not folder[-1] == os.path.sep:
+                folder = folder + os.path.sep
             return folder
         else:
             print('\n[*] Folder Not found! ', end='')
             quit()
     else:
-        answer = input('[*] Your default destination is ' + folder +  "\n[*] Do you want to keep that (Y/n): ")
+        answer = input('[*] Your default destination is ' + folder + "\n[*] Do you want to keep that (Y/n): ")
         if answer == 'n' or answer == 'no' or answer == 'N':
             valid_folder = False
-            while valid_folder == False:
+            while not valid_folder:
                 selected_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
                 # Adds a seperator at the end if the user didn't
                 if not selected_folder.endswith(os.path.sep):
@@ -163,9 +114,21 @@ def choose_folder():
                     valid_folder = True
                 else:
                     print('\n[*] Folder Not found! ', end='')
+    if not folder[-1] == os.path.sep:
+        folder = folder + os.path.sep
     return folder
 
-# Gets the name of the course from the course number, and makes a folder with that name
+
+def create_nav_links_dictionary(soup):
+    navigate_dict = {}
+    nav_links = soup.find_all('li', attrs={"class": "nav-item"})
+    for navigate_link in nav_links:
+        if navigate_link.h5:
+            nav_name = navigate_link.h5.text.strip()
+            nav_number = navigate_link.a.get('aria-controls')
+            navigate_dict[nav_number] = nav_name
+    return navigate_dict
+
 
 def make_course_folder(courses, index, folder):
     course_name = None
@@ -173,11 +136,57 @@ def make_course_folder(courses, index, folder):
         if course[2] == index:
             course_name = course[1]
             break
-    new_folder = folder + os.path.sep + course_name + os.path.sep
+    new_folder = folder + course_name + os.path.sep
     if not os.path.isdir(new_folder):
         os.mkdir(new_folder)
     folder = new_folder
     return folder
+
+
+def find_files_paths_and_links(navigation_dict, soup):
+    file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text)
+    files_list = []
+    path = []
+    associated_nav_link_id = ''
+    for file_tag in file_tags:
+        current_tag = file_tag
+        if not current_tag:
+            print('no pdf or pptx files!')
+            quit()
+        while True:
+            current_tag = current_tag.parent
+            if current_tag.name == 'div' and 'mb-3' in current_tag.get('class', []):
+                path.append(current_tag.h6.text.strip())
+            if current_tag.name == 'div' and 'tab-pane' in current_tag.get('class', []):
+                associated_nav_link_id = current_tag.get('id')
+            if not current_tag.parent:
+                break
+        path.append(navigation_dict[associated_nav_link_id])
+        path.reverse()
+        basename = file_tag.text
+        file_path = "/".join(path) + os.path.sep
+        path.clear()
+
+        file_link = file_tag.get('href')
+        files_list.append([file_path, file_link, basename])
+    return files_list
+
+
+def download_from_dict(path_link_dict, folder):
+    for path, link, name in path_link_dict:
+
+        if os.path.isfile(folder + path + name):
+            print(Fore.MAGENTA + path + name + ' <is already downloaded there XD>' + Fore.RESET)
+            continue
+
+        if not os.path.isdir(folder + path):
+            os.makedirs(folder + path)
+
+        response = requests.get(link, headers=HEADERS)
+        with open(folder + path + name, 'wb') as file:
+            file.write(response.content)
+        print('[*] Downloaded ' + name)
+
 
 def main():
     folder = choose_folder()
@@ -186,18 +195,22 @@ def main():
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
-    download_lectures(download_url, folder)
+    course_page = requests.get(download_url, headers=HEADERS)
+    soup = BeautifulSoup(course_page.text, 'html.parser')
+
+    nav_dict = create_nav_links_dictionary(soup)
+    file_dict = find_files_paths_and_links(nav_dict, soup)
+    download_from_dict(file_dict, folder)
+
 
 if __name__ == '__main__':
     print(Fore.CYAN + '#'*54 + Fore.RESET)
-
     try:
         main()
     except KeyboardInterrupt:
         print(Fore.RED + '\n[*] KeyboardInterrupt')
         print(Fore.GREEN + '[*] Good bye!')
         quit()
-
     print(Fore.GREEN + '\n\n[*] Done...')
     print('[*] Goodbye!')
     input('[*] Press anything to' + Fore.RED + ' exit')
