@@ -13,7 +13,7 @@ parser.add_argument('-c', '--course', type=int, metavar='', help='to specify cou
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
 
-FOLDER = '/test'
+FOLDER = '/dox/med'
 
 HEADERS = headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -93,8 +93,8 @@ def choose_folder():
             args.folder = os.path.expanduser(args.folder)
         if os.path.isdir(args.folder):
             folder = args.folder
-            if not folder[-1] == os.sep:
-                folder = folder + os.sep
+            if not folder[-1] == os.path.sep:
+                folder = folder + os.path.sep
             return folder
         else:
             print('\n[*] Folder Not found! ', end='')
@@ -114,8 +114,8 @@ def choose_folder():
                     valid_folder = True
                 else:
                     print('\n[*] Folder Not found! ', end='')
-    if not folder[-1] == os.sep:
-        folder = folder + os.sep
+    if not folder[-1] == os.path.sep:
+        folder = folder + os.path.sep
     return folder
 
 
@@ -130,8 +130,21 @@ def create_nav_links_dictionary(soup):
     return navigate_dict
 
 
+def make_course_folder(courses, index, folder):
+    course_name = None
+    for course in courses:
+        if course[2] == index:
+            course_name = course[1]
+            break
+    new_folder = folder + course_name + os.path.sep
+    if not os.path.isdir(new_folder):
+        os.mkdir(new_folder)
+    folder = new_folder
+    return folder
+
+
 def find_files_paths_and_links(navigation_dict, soup):
-    file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.pptx' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text)
+    file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text)
     files_list = []
     path = []
     associated_nav_link_id = ''
@@ -151,7 +164,7 @@ def find_files_paths_and_links(navigation_dict, soup):
         path.append(navigation_dict[associated_nav_link_id])
         path.reverse()
         basename = file_tag.text
-        file_path = "/".join(path) + os.sep
+        file_path = "/".join(path) + os.path.sep
         path.clear()
 
         file_link = file_tag.get('href')
@@ -180,6 +193,7 @@ def main():
     batch_url = choose_batch()
     courses = find_courses(batch_url)
     course_number = choose_course(courses)
+    folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
     course_page = requests.get(download_url, headers=HEADERS)
     soup = BeautifulSoup(course_page.text, 'html.parser')
