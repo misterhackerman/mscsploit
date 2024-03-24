@@ -66,7 +66,7 @@ def find_courses(url):
 def choose_course(courses):
     if args.course:
         course_number = str(courses[args.course - 1][2])
-        print('\n[*] Downloading', courses[args.course - 1][1])
+        print('\n[*] Alright, ', courses[args.course - 1][1])
         print(Fore.RESET)
         return course_number
     for course in courses:
@@ -78,7 +78,7 @@ def choose_course(courses):
         for course in courses:
             if selected_course == course[0]:
                 list_index = selected_course - 1
-                print('\n[*] Downloading', course[1])
+                print('\n[*] Alright, ', course[1])
         course_number = str(courses[list_index][2])
         return course_number
     except:
@@ -173,10 +173,12 @@ def find_files_paths_and_links(navigation_dict, soup):
 
 
 def download_from_dict(path_link_dict, folder):
+    counter = 0
     for path, link, name in path_link_dict:
 
+        counter = counter + 1
         if os.path.isfile(folder + path + name):
-            print(Fore.MAGENTA + path + name + ' <is already downloaded there XD>' + Fore.RESET)
+            print(Fore.MAGENTA + '[ Already there! ] ' + name + Fore.RESET)
             continue
 
         if not os.path.isdir(folder + path):
@@ -185,7 +187,7 @@ def download_from_dict(path_link_dict, folder):
         response = requests.get(link, headers=HEADERS)
         with open(folder + path + name, 'wb') as file:
             file.write(response.content)
-        print('[*] Downloaded ' + name)
+        print('[*] Downloaded ' + name + ' -- Progress:' + str(counter) + os.path.sep + str(len(path_link_dict)))
 
 
 def main():
@@ -195,6 +197,7 @@ def main():
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
+    print(Fore.GREEN + '[*] Requesting Page...' + Fore.RESET)
     course_page = requests.get(download_url, headers=HEADERS)
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
