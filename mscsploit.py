@@ -30,11 +30,11 @@ def choose_batch():
         [6, 'Minors', 'https://msc-mu.com/level/10'],
         [7, 'Majors', 'https://msc-mu.com/level/9']
     ]
-    print('\n')
     if args.batch:
         batch_url = batches[args.batch - 1][2]
-        print('\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
+        print('[*] Searching', batches[args.batch - 1][1] + '\'s batch...')
         return batch_url
+    print('\n')
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1])
     selected_batch = input('\n[*] Which batch are you?\n\n>> ')
@@ -66,7 +66,7 @@ def find_courses(url):
 def choose_course(courses):
     if args.course:
         course_number = str(courses[args.course - 1][2])
-        print('\n[*] Alright, ', courses[args.course - 1][1])
+        print('[*] Alright, ', courses[args.course - 1][1])
         return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
@@ -199,7 +199,7 @@ def main():
     download_url = 'https://msc-mu.com/courses/' + course_number
     print('[*] Requesting page...')
     course_page = requests.get(download_url, headers=HEADERS)
-    print('[*] Parsing page into a soup')
+    print('[*] Parsing page into a soup...')
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
     nav_dict = create_nav_links_dictionary(soup)
@@ -208,7 +208,11 @@ def main():
 
 
 if __name__ == '__main__':
-    print('#'*54)
+    print(''' __  __ ____   ____ ____  ____  _     ___ ___ _____ 
+|  \/  / ___| / ___/ ___||  _ \| |   / _ \_ _|_   _|
+| |\/| \___ \| |   \___ \| |_) | |  | | | | |  | |  
+| |  | |___) | |___ ___) |  __/| |__| |_| | |  | |  
+|_|  |_|____/ \____|____/|_|   |_____\___/___| |_|  ''')
     try:
         main()
     except KeyboardInterrupt:
