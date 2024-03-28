@@ -173,11 +173,12 @@ def find_files_paths_and_links(navigation_dict, soup):
 
 def download_from_dict(path_link_dict, folder):
     counter = 0
-    for path, link, name in track(path_link_dict, description=f'Downloading...'):
+    for path, link, name in track(path_link_dict, description=f'[*] Downloading...'):
 
         counter = counter + 1
+        count = f' ({counter}/{len(path_link_dict)})'
         if os.path.isfile(folder + path + name):
-            print('[ Already there! ] ' + name)
+            print('[ Already there! ] ' + name + count)
             continue
 
         if not os.path.isdir(folder + path):
@@ -186,7 +187,7 @@ def download_from_dict(path_link_dict, folder):
         response = requests.get(link, headers=HEADERS)
         with open(folder + path + name, 'wb') as file:
             file.write(response.content)
-        print('[*] Downloaded ' + name)
+        print('[*] Downloaded ' + name + count)
 
 
 def main():
@@ -196,8 +197,9 @@ def main():
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
-    print('[*] Requesting Page...')
+    print('[*] Requesting page...')
     course_page = requests.get(download_url, headers=HEADERS)
+    print('[*] Parsing page into a soup')
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
     nav_dict = create_nav_links_dictionary(soup)
