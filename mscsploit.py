@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from bs4 import BeautifulSoup
-from colorama import Fore
+from rich.progress import track
 import requests
 import argparse
 import re
@@ -33,7 +33,7 @@ def choose_batch():
     print('\n')
     if args.batch:
         batch_url = batches[args.batch - 1][2]
-        print(Fore.GREEN + '\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
+        print('\n[*] Searching', batches[args.batch - 1][1] + '\'s batch...\n')
         return batch_url
     for batch in batches:
         print(str(batch[0]) + ') ' + batch[1])
@@ -67,7 +67,6 @@ def choose_course(courses):
     if args.course:
         course_number = str(courses[args.course - 1][2])
         print('\n[*] Alright, ', courses[args.course - 1][1])
-        print(Fore.RESET)
         return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
@@ -174,11 +173,11 @@ def find_files_paths_and_links(navigation_dict, soup):
 
 def download_from_dict(path_link_dict, folder):
     counter = 0
-    for path, link, name in path_link_dict:
+    for path, link, name in track(path_link_dict, description=f'Downloading...'):
 
         counter = counter + 1
         if os.path.isfile(folder + path + name):
-            print(Fore.MAGENTA + '[ Already there! ] ' + name + Fore.RESET)
+            print('[ Already there! ] ' + name)
             continue
 
         if not os.path.isdir(folder + path):
@@ -187,7 +186,7 @@ def download_from_dict(path_link_dict, folder):
         response = requests.get(link, headers=HEADERS)
         with open(folder + path + name, 'wb') as file:
             file.write(response.content)
-        print('[*] Downloaded ' + name + ' -- Progress:' + str(counter) + os.path.sep + str(len(path_link_dict)))
+        print('[*] Downloaded ' + name)
 
 
 def main():
@@ -197,7 +196,7 @@ def main():
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
-    print(Fore.GREEN + '[*] Requesting Page...' + Fore.RESET)
+    print('[*] Requesting Page...')
     course_page = requests.get(download_url, headers=HEADERS)
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
@@ -207,13 +206,13 @@ def main():
 
 
 if __name__ == '__main__':
-    print(Fore.CYAN + '#'*54 + Fore.RESET)
+    print('#'*54)
     try:
         main()
     except KeyboardInterrupt:
-        print(Fore.RED + '\n[*] KeyboardInterrupt')
-        print(Fore.GREEN + '[*] Good bye!')
+        print('\n[*] KeyboardInterrupt')
+        print('[*] Good bye!')
         quit()
-    print(Fore.GREEN + '\n\n[*] Done...')
+    print('\n\n[*] Done...')
     print('[*] Goodbye!')
-    input('[*] Press anything to' + Fore.RED + ' exit')
+    input('[*] Press anything to exit')
