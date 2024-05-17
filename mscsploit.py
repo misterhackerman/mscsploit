@@ -8,7 +8,7 @@ import re
 import os
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
-parser.add_argument('-b', '--category', type=int, metavar='', help='to specify category number')
+parser.add_argument('-t', '--category', type=int, metavar='', help='to specify category number')
 parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
@@ -37,7 +37,7 @@ def choose_category():
     print('\n')
     for category in categories:
         print(str(category[0]) + ') ' + category[1])
-    selected_category = input('\n[*] Which category are you?\n\n>> ')
+    selected_category = input('\n[*] Choose  a category.\n\n>> ')
     try:
         selected_category = int(selected_category)
         for category in categories:
