@@ -8,7 +8,7 @@ import re
 import os
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
-parser.add_argument('-b', '--batch', type=int, metavar='', help='to specify batch number')
+parser.add_argument('-b', '--category', type=int, metavar='', help='to specify category number')
 parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
@@ -20,8 +20,8 @@ HEADERS = headers = {
         }
 
 
-def choose_batch():
-    batches = [
+def choose_category():
+    categories = [
         [1, 'Athar', 'https://msc-mu.com/level/17'],
         [2, 'Rou7', 'https://msc-mu.com/level/16'],
         [3, 'Wateen', 'https://msc-mu.com/level/15'],
@@ -30,24 +30,24 @@ def choose_batch():
         [6, 'Minors', 'https://msc-mu.com/level/10'],
         [7, 'Majors', 'https://msc-mu.com/level/9']
     ]
-    if args.batch:
-        batch_url = batches[args.batch - 1][2]
-        print('[*] Searching', batches[args.batch - 1][1] + '\'s batch...')
-        return batch_url
+    if args.category:
+        category_url = categories[args.category - 1][2]
+        print('[*] Searching', categories[args.category - 1][1] + '\'s category...')
+        return category_url
     print('\n')
-    for batch in batches:
-        print(str(batch[0]) + ') ' + batch[1])
-    selected_batch = input('\n[*] Which batch are you?\n\n>> ')
+    for category in categories:
+        print(str(category[0]) + ') ' + category[1])
+    selected_category = input('\n[*] Which category are you?\n\n>> ')
     try:
-        selected_batch = int(selected_batch)
-        for batch in batches:
-            if selected_batch == batch[0]:
-                print('\n[*] Searching', batch[1] + '\'s batch...\n')
-        batch_url = batches[selected_batch - 1][2]
-        return batch_url
+        selected_category = int(selected_category)
+        for category in categories:
+            if selected_category == category[0]:
+                print('\n[*] Searching', category[1] + '\'s category...\n')
+        category_url = categories[selected_category - 1][2]
+        return category_url
     except:
         print('\n[*]Invalid Input\n')
-        return choose_batch()
+        return choose_category()
 
 
 def find_courses(url):
@@ -192,8 +192,8 @@ def download_from_dict(path_link_dict, folder):
 
 def main():
     folder = choose_folder()
-    batch_url = choose_batch()
-    courses = find_courses(batch_url)
+    category_url = choose_category()
+    courses = find_courses(category_url)
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
