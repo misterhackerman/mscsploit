@@ -28,3 +28,8 @@ We all know our uni sucks, this could possibly make it https://suckless.org/
 6. type this in the terminal `pip install -r ./requirements.txt`
 7. when it's done, double click the mscsploit file.
 8. enjoy!
+9. Consider Switching to linux.
+
+### Mac:
+
++ i don't think you will be using this. and if you want to u already know how
