@@ -13,6 +13,7 @@ parser.add_argument('-c', '--course', type=int, metavar='', help='to specify cou
 parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
 args = parser.parse_args()
 
+DECOR = ' \033[34;1m::\033[0m'
 FOLDER = '/dox/med'
 
 HEADERS = headers = {
@@ -32,21 +33,21 @@ def choose_category():
     ]
     if args.category:
         category_url = categories[args.category - 1][2]
-        print('[*] Searching', categories[args.category - 1][1] + '\'s category...')
+        print(DECOR + ' Searching', categories[args.category - 1][1] + '\'s category...')
         return category_url
     print('\n')
     for category in categories:
         print(str(category[0]) + ') ' + category[1])
-    selected_category = input('\n[*] Choose  a category.\n\n>> ')
+    selected_category = input('\n' + DECOR + ' Choose  a category.\n\n>> ')
     try:
         selected_category = int(selected_category)
         for category in categories:
             if selected_category == category[0]:
-                print('\n[*] Searching', category[1] + '\'s category...\n')
+                print('\n' + DECOR + ' Searching', category[1] + '\'s category...\n')
         category_url = categories[selected_category - 1][2]
         return category_url
     except:
-        print('\n[*]Invalid Input\n')
+        print('\n' + DECOR + ' Invalid Input\n')
         return choose_category()
 
 
@@ -66,22 +67,22 @@ def find_courses(url):
 def choose_course(courses):
     if args.course:
         course_number = str(courses[args.course - 1][2])
-        print('[*] Alright, ', courses[args.course - 1][1])
+        print(DECOR + ' Alright, ', courses[args.course - 1][1])
         return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
-    selected_course = input('\n[*] Which course would you like to download?\n\n>> ')
+    selected_course = input('\n' + DECOR + ' Which course would you like to download?\n\n>> ')
     list_index = None
     try:
         selected_course = int(selected_course)
         for course in courses:
             if selected_course == course[0]:
                 list_index = selected_course - 1
-                print('\n[*] Alright, ', course[1])
+                print('\n' + DECOR + ' Alright, ', course[1])
         course_number = str(courses[list_index][2])
         return course_number
     except:
-        print('\n[*]Invalid Input\n')
+        print('\n' + DECOR + 'Invalid Input\n')
         return choose_course(courses)
 
 
@@ -96,14 +97,14 @@ def choose_folder():
                 folder = folder + os.path.sep
             return folder
         else:
-            print('\n[*] Folder Not found! ', end='')
+            print('\n' + DECOR + ' Folder Not found! ', end='')
             quit()
     else:
-        answer = input('[*] Your default destination is ' + folder + "\n[*] Do you want to keep that (Y/n): ")
+        answer = input(DECOR + ' Your default destination is ' + folder + '\n' + DECOR + ' Do you want to keep that (Y/n): ')
         if answer == 'n' or answer == 'no' or answer == 'N':
             valid_folder = False
             while not valid_folder:
-                selected_folder = input('\n[*] Enter the Folder you want to save material in.\n\n>> ')
+                selected_folder = input('\n' + DECOR + ' Enter the Folder you want to save material in.\n\n>> ')
                 # Adds a seperator at the end if the user didn't
                 if not selected_folder.endswith(os.path.sep):
                     selected_folder = selected_folder + os.path.sep
@@ -112,7 +113,7 @@ def choose_folder():
                     folder = selected_folder
                     valid_folder = True
                 else:
-                    print('\n[*] Folder Not found! ', end='')
+                    print('\n' + DECOR + ' Folder Not found! ', end='')
     if not folder[-1] == os.path.sep:
         folder = folder + os.path.sep
     return folder
@@ -173,7 +174,7 @@ def find_files_paths_and_links(navigation_dict, soup):
 
 def download_from_dict(path_link_dict, folder):
     counter = 0
-    for path, link, name in track(path_link_dict, description=f'[*] Downloading...'):
+    for path, link, name in track(path_link_dict, description=f'{DECOR} Downloading...'):
 
         counter = counter + 1
         count = f' ({counter}/{len(path_link_dict)})'
@@ -187,7 +188,7 @@ def download_from_dict(path_link_dict, folder):
         response = requests.get(link, headers=HEADERS)
         with open(folder + path + name, 'wb') as file:
             file.write(response.content)
-        print('[*] Downloaded ' + name + count)
+        print(DECOR + ' Downloaded ' + name + count)
 
 
 def main():
@@ -197,9 +198,9 @@ def main():
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
-    print('[*] Requesting page...')
+    print(DECOR + ' Requesting page...')
     course_page = requests.get(download_url, headers=HEADERS)
-    print('[*] Parsing page into a soup...')
+    print(DECOR + ' Parsing page into a soup...')
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
     nav_dict = create_nav_links_dictionary(soup)
@@ -208,18 +209,18 @@ def main():
 
 
 if __name__ == '__main__':
-    print('''███╗   ███╗███████╗ ██████╗███████╗██████╗ ██╗      ██████╗ ██╗████████╗
-████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██║     ██╔═══██╗██║╚══██╔══╝
-██╔████╔██║███████╗██║     ███████╗██████╔╝██║     ██║   ██║██║   ██║   
-██║╚██╔╝██║╚════██║██║     ╚════██║██╔═══╝ ██║     ██║   ██║██║   ██║   
-██║ ╚═╝ ██║███████║╚██████╗███████║██║     ███████╗╚██████╔╝██║   ██║   
-╚═╝     ╚═╝╚══════╝ ╚═════╝╚══════╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝''')
+    print(''' ███╗   ███╗███████╗ ██████╗███████╗██████╗ ██╗      ██████╗ ██╗████████╗
+ ████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██║     ██╔═══██╗██║╚══██╔══╝
+ ██╔████╔██║███████╗██║     ███████╗██████╔╝██║     ██║   ██║██║   ██║   
+ ██║╚██╔╝██║╚════██║██║     ╚════██║██╔═══╝ ██║     ██║   ██║██║   ██║   
+ ██║ ╚═╝ ██║███████║╚██████╗███████║██║     ███████╗╚██████╔╝██║   ██║   
+ ╚═╝     ╚═╝╚══════╝ ╚═════╝╚══════╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝''')
     try:
         main()
     except KeyboardInterrupt:
-        print('\n[*] KeyboardInterrupt')
-        print('[*] Good bye!')
+        print('\n' + DECOR + ' KeyboardInterrupt')
+        print(DECOR + ' Good bye!')
         quit()
-    print('\n\n[*] Done...')
-    print('[*] Goodbye!')
-    input('[*] Press anything to exit')
+    print('\n\n' + DECOR + ' Done...')
+    print(DECOR + ' Goodbye!')
+    input(DECOR + ' Press anything to \033[31;1mexit')
