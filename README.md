@@ -1,5 +1,5 @@
 # MSCSPLOIT
-API That downloads your courses from msc-mu.com . 
+API That downloads your courses from msc-mu.com.
 We all know our uni sucks, this could possibly make it https://suckless.org/
 
 ## Dependencies
@@ -9,28 +9,31 @@ We all know our uni sucks, this could possibly make it https://suckless.org/
 
 ## Installation
 ### Linux:
-1. clone the repo using `git clone`
-2. change directory into mscsploit 
+1. Clone the repo using `git clone`.
+2. Change directory into mscsploit.
 `$ cd mscsploit`
-3. install python requrements
+3. Install python requrements.
 `$ pip install -r ./requirements.txt`
-4. run the script
+4. Run the script.
 `$ python3 ./mscsploit.py`
 
 ### Windows:
 #### For terminal guys: same as linux.
 #### For noobs:
-1. install python3 from the microsoft store.
-2. download the latest zip file from the releases section.
-3. unzip the file using windows explorer.
+1. Install python3 from the microsoft store.
+2. Download the latest zip file from the releases section.
+3. Unzip the file using windows explorer.
 4. Enter the unzipped folder
-5. right click there and choose open terminal here
-6. type this in the terminal `pip install -r ./requirements.txt`
-7. when it's done, double click the mscsploit file.
-8. enjoy!
+5. Right click there and choose open terminal here
+6. Type this in the terminal `pip install -r ./requirements.txt`
+7. When it's done, double click the mscsploit file.
+8. Enjoy!
 9. Consider Switching to linux.
-10. New gui under construction 
+10. New gui under construction.
 
 ### Mac:
 
-+ i don't think you will be using this. and if you want to u already know how
++ I don't think you will be using this. and if you want to u already know how.
+
+---
+![msc-mu image](https://msc-mu.com/storage/KW8sliIbaWpfdgNaWNxFQQN822p88X46pq8ZMSyy.png)
