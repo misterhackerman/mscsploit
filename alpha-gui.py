@@ -7,7 +7,7 @@ import re
 import os
 import tkinter as tk
 from tkinter import messagebox, filedialog
-
+import customtkinter as ctk
 # Constants
 DECOR = ' ::'
 FOLDER = '/dox/med'
@@ -117,7 +117,7 @@ def update_courses_menu(*args):
     try:
         courses = find_courses(category_url)
     except Exception as e:
-        messagebox.showerror("Error", f"Failed to fetch courses: {e}")
+        tk.messagebox.showerror("Error", f"Failed to fetch courses: {e}")
         return
 
     course_var.set("Select a course")
@@ -125,7 +125,7 @@ def update_courses_menu(*args):
     menu.delete(0, 'end')
 
     for idx, course in enumerate(courses):
-        menu.add_command(label=course[1], command=tk._setit(course_var, course[1]))
+        menu.add_command(label=course[1], command=ctk._setit(course_var, course[1]))
 
 def start_download():
     category_name = category_var.get()
@@ -133,22 +133,22 @@ def start_download():
     folder = folder_var.get()
 
     if category_name == "Select a category":
-        messagebox.showerror("Error", "Please select a category.")
+        tk.messagebox.showerror("Error", "Please select a category.")
         return
 
     if course_name == "Select a course":
-        messagebox.showerror("Error", "Please select a course.")
+        tk.messagebox.showerror("Error", "Please select a course.")
         return
 
     if not folder:
-        messagebox.showerror("Error", "Please select a destination folder.")
+        tk.messagebox.showerror("Error", "Please select a destination folder.")
         return
 
     category_url = categories[category_name]
     try:
         courses = find_courses(category_url)
     except Exception as e:
-        messagebox.showerror("Error", f"Failed to fetch courses: {e}")
+        tk.messagebox.showerror("Error", f"Failed to fetch courses: {e}")
         return
     
     course_number = next(course[2] for course in courses if course[1] == course_name)
@@ -165,34 +165,39 @@ def start_download():
         download_from_dict(file_dict, folder)
         messagebox.showinfo("Success", "Download complete!")
     except Exception as e:
-        messagebox.showerror("Error", f"An error occurred: {e}")
+        tk.messagebox.showerror("Error", f"An error occurred: {e}")
 
+
+#theme 
+ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
+ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 # GUI Setup
-root = tk.Tk()
+root = ctk.CTk()
 root.title("MSC-MU Lecture Downloader")
 
 # Category selection
-tk.Label(root, text="Select Category:").grid(row=0, column=0, padx=10, pady=5)
-category_var = tk.StringVar(value="Select a category")
-category_menu = tk.OptionMenu(root, category_var, *categories.keys())
+ctk.CTkLabel(root, text="Select Category:").grid(row=0, column=0, padx=10, pady=5)
+category_var = ctk.StringVar(value="Select a category")
+category_menu = ctk.CTkOptionMenu(root,values=list(categories.keys()),variable = category_var,command=update_courses_menu)
 category_menu.grid(row=0, column=1, padx=10, pady=5)
 category_var.trace('w', update_courses_menu)
 
 # Course selection
-tk.Label(root, text="Select Course:").grid(row=1, column=0, padx=10, pady=5)
-course_var = tk.StringVar(value="Select a course")
-course_menu = tk.OptionMenu(root, course_var, "Select a category first")
+ctk.CTkLabel(root, text="Select Course:").grid(row=1, column=0, padx=10, pady=5)
+course_var = ctk.StringVar(value="Select a course")
+course_menu = ctk.CTkOptionMenu(root,variable=course_var,values=["Select a category first"])
 course_menu.grid(row=1, column=1, padx=10, pady=5)
 
 # Folder selection
-tk.Label(root, text="Select Destination Folder:").grid(row=2, column=0, padx=10, pady=5)
-folder_var = tk.StringVar()
-folder_entry = tk.Entry(root, textvariable=folder_var, width=50)
+ctk.CTkLabel(root, text="Select Destination Folder:").grid(row=2, column=0, padx=10, pady=5)
+folder_var = ctk.StringVar()
+folder_entry = ctk.CTkEntry(root, textvariable=folder_var, width=50)
 folder_entry.grid(row=2, column=1, padx=10, pady=5)
-tk.Button(root, text="Browse...", command=lambda: folder_var.set(filedialog.askdirectory())).grid(row=2, column=2, padx=10, pady=5)
+ctk.CTkButton(root, text="Browse...", command=lambda: folder_var.set(filedialog.askdirectory())).grid(row=2, column=2, padx=10, pady=5)
 
 # Download button
-tk.Button(root, text="Download", command=start_download).grid(row=3, column=1, padx=10, pady=10)
+ctk.CTkButton(root, text="Download", command=start_download).grid(row=3, column=1, padx=10, pady=10)
 
 root.mainloop()
+
 
