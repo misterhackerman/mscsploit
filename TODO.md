@@ -8,7 +8,5 @@
 2. Adsense.
 3. Crush bugs.
 4. Convert to executable.
-5. test.
-
-
-
+5. Test.
+6. Make it cross-platform
