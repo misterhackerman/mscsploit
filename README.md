@@ -34,3 +34,6 @@ We all know our uni sucks, this could possibly make it https://suckless.org/
 ### Mac:
 
 + I don't think you will be using this. and if you want to u already know how.
+
+---
+![msc-mu image](https://msc-mu.com/storage/KW8sliIbaWpfdgNaWNxFQQN822p88X46pq8ZMSyy.png)
