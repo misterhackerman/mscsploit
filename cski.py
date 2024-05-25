@@ -1,16 +1,15 @@
 #!/usr/bin/python3
 
 from bs4 import BeautifulSoup
-from rich.progress import track
 import requests
 import re
 import os
-import tkinter as tk
-from tkinter import messagebox, filedialog
 import customtkinter as ctk
+from tkinter import messagebox, filedialog
+import threading
+
 # Constants
 DECOR = ' ::'
-FOLDER = '/dox/med'
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
@@ -49,17 +48,11 @@ def create_nav_links_dictionary(soup):
             navigate_dict[nav_number] = nav_name
     return navigate_dict
 
-def make_course_folder(courses, index, folder):
-    course_name = None
-    for course in courses:
-        if course[2] == index:
-            course_name = course[1]
-            break
-    new_folder = folder + course_name + os.path.sep
+def make_course_folder(folder, course_name):
+    new_folder = os.path.join(folder, course_name)
     if not os.path.isdir(new_folder):
         os.mkdir(new_folder)
-    folder = new_folder
-    return folder
+    return new_folder
 
 def find_files_paths_and_links(navigation_dict, soup):
     file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text)
@@ -89,23 +82,30 @@ def find_files_paths_and_links(navigation_dict, soup):
         files_list.append([file_path, file_link, basename])
     return files_list
 
-def download_from_dict(path_link_dict, folder):
+def download_from_dict(path_link_dict, folder, progress_bar):
     counter = 0
-    for path, link, name in track(path_link_dict, description=f'{DECOR} Downloading...'):
-
-        counter = counter + 1
-        count = f' ({counter}/{len(path_link_dict)})'
-        if os.path.isfile(folder + path + name):
+    total_files = len(path_link_dict)
+    
+    for path, link, name in path_link_dict:
+        counter += 1
+        count = f' ({counter}/{total_files})'
+        full_path = os.path.join(folder, path)
+        
+        if os.path.isfile(os.path.join(full_path, name)):
             print('[ Already there! ] ' + name + count)
             continue
 
-        if not os.path.isdir(folder + path):
-            os.makedirs(folder + path)
+        if not os.path.isdir(full_path):
+            os.makedirs(full_path)
 
         response = requests.get(link, headers=HEADERS)
-        with open(folder + path + name, 'wb') as file:
+        with open(os.path.join(full_path, name), 'wb') as file:
             file.write(response.content)
         print(DECOR + ' Downloaded ' + name + count)
+        
+        # Update the progress bar
+        progress = counter / total_files
+        progress_bar.set(progress)
 
 def update_courses_menu(*args):
     category_name = category_var.get()
@@ -117,15 +117,11 @@ def update_courses_menu(*args):
     try:
         courses = find_courses(category_url)
     except Exception as e:
-        tk.messagebox.showerror("Error", f"Failed to fetch courses: {e}")
+        messagebox.showerror("Error", f"Failed to fetch courses: {e}")
         return
 
     course_var.set("Select a course")
-    menu = course_menu['menu']
-    menu.delete(0, 'end')
-
-    for idx, course in enumerate(courses):
-        menu.add_command(label=course[1], command=ctk._setit(course_var, course[1]))
+    course_menu.configure(values=[course[1] for course in courses])
 
 def start_download():
     category_name = category_var.get()
@@ -133,71 +129,84 @@ def start_download():
     folder = folder_var.get()
 
     if category_name == "Select a category":
-        tk.messagebox.showerror("Error", "Please select a category.")
+        messagebox.showerror("Error", "Please select a category.")
         return
 
     if course_name == "Select a course":
-        tk.messagebox.showerror("Error", "Please select a course.")
+        messagebox.showerror("Error", "Please select a course.")
         return
 
     if not folder:
-        tk.messagebox.showerror("Error", "Please select a destination folder.")
+        messagebox.showerror("Error", "Please select a destination folder.")
         return
 
     category_url = categories[category_name]
     try:
         courses = find_courses(category_url)
     except Exception as e:
-        tk.messagebox.showerror("Error", f"Failed to fetch courses: {e}")
+        messagebox.showerror("Error", f"Failed to fetch courses: {e}")
         return
     
     course_number = next(course[2] for course in courses if course[1] == course_name)
-    folder = make_course_folder(courses, course_number, folder)
+    download_folder = make_course_folder(folder, course_name)
     download_url = 'https://msc-mu.com/courses/' + course_number
 
-    try:
-        print(DECOR + ' Requesting page...')
-        course_page = requests.get(download_url, headers=HEADERS)
-        print(DECOR + ' Parsing page into a soup...')
-        soup = BeautifulSoup(course_page.text, 'html.parser')
-        nav_dict = create_nav_links_dictionary(soup)
-        file_dict = find_files_paths_and_links(nav_dict, soup)
-        download_from_dict(file_dict, folder)
-        messagebox.showinfo("Success", "Download complete!")
-    except Exception as e:
-        tk.messagebox.showerror("Error", f"An error occurred: {e}")
+    def download_thread():
+        try:
+            print(DECOR + ' Requesting page...')
+            course_page = requests.get(download_url, headers=HEADERS)
+            print(DECOR + ' Parsing page into a soup...')
+            soup = BeautifulSoup(course_page.text, 'html.parser')
+            nav_dict = create_nav_links_dictionary(soup)
+            file_dict = find_files_paths_and_links(nav_dict, soup)
+            
+            progress_bar.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+            download_from_dict(file_dict, download_folder, progress_bar)
+            progress_bar.grid_remove()  # Remove progress bar after download completes
+            messagebox.showinfo("Success", "Download complete!")
+        except Exception as e:
+            progress_bar.grid_remove()  # Ensure progress bar is removed on error
+            messagebox.showerror("Error", f"An error occurred: {e}")
 
+    # Start download thread
+    threading.Thread(target=download_thread).start()
 
-#theme 
-ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
-ctk.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 # GUI Setup
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("blue")
+
 root = ctk.CTk()
 root.title("MSC-MU Lecture Downloader")
 
+# Configure grid layout
+root.grid_columnconfigure(1, weight=1)
+root.grid_rowconfigure(4, weight=1)
+
 # Category selection
-ctk.CTkLabel(root, text="Select Category:").grid(row=0, column=0, padx=10, pady=5)
+ctk.CTkLabel(root, text="Select Category:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
 category_var = ctk.StringVar(value="Select a category")
-category_menu = ctk.CTkOptionMenu(root,values=list(categories.keys()),variable = category_var,command=update_courses_menu)
-category_menu.grid(row=0, column=1, padx=10, pady=5)
+category_menu = ctk.CTkOptionMenu(root, variable=category_var, values=list(categories.keys()))
+category_menu.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
 category_var.trace('w', update_courses_menu)
 
 # Course selection
-ctk.CTkLabel(root, text="Select Course:").grid(row=1, column=0, padx=10, pady=5)
+ctk.CTkLabel(root, text="Select Course:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
 course_var = ctk.StringVar(value="Select a course")
-course_menu = ctk.CTkOptionMenu(root,variable=course_var,values=["Select a category first"])
-course_menu.grid(row=1, column=1, padx=10, pady=5)
+course_menu = ctk.CTkOptionMenu(root, variable=course_var, values=["Select a category first"])
+course_menu.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
 
 # Folder selection
-ctk.CTkLabel(root, text="Select Destination Folder:").grid(row=2, column=0, padx=10, pady=5)
+ctk.CTkLabel(root, text="Select Destination Folder:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
 folder_var = ctk.StringVar()
 folder_entry = ctk.CTkEntry(root, textvariable=folder_var, width=50)
-folder_entry.grid(row=2, column=1, padx=10, pady=5)
-ctk.CTkButton(root, text="Browse...", command=lambda: folder_var.set(filedialog.askdirectory())).grid(row=2, column=2, padx=10, pady=5)
+folder_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+ctk.CTkButton(root, text="Browse...", command=lambda: folder_var.set(filedialog.askdirectory())).grid(row=2, column=2, padx=10, pady=5, sticky="ew")
 
 # Download button
-ctk.CTkButton(root, text="Download", command=start_download).grid(row=3, column=1, padx=10, pady=10)
+ctk.CTkButton(root, text="Download", command=start_download).grid(row=3, column=1, padx=10, pady=10, sticky="ew")
+
+# Progress bar
+progress_bar = ctk.CTkProgressBar(root)
+progress_bar.set(0)
 
 root.mainloop()
-
-
