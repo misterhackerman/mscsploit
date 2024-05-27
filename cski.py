@@ -54,15 +54,18 @@ def make_course_folder(folder, course_name):
         os.mkdir(new_folder)
     return new_folder
 
-def find_files_paths_and_links(navigation_dict, soup):
-    file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text)
+def find_files_paths_and_links(navigation_dict, soup, file_types):
+    file_tags = []
+    for file_type in file_types:
+        file_tags.extend(soup.find_all('a', string=lambda text: text and file_type in text))
+    
     files_list = []
     path = []
     associated_nav_link_id = ''
     for file_tag in file_tags:
         current_tag = file_tag
         if not current_tag:
-            print('no pdf or pptx files!')
+            print('No files found for the selected extensions!')
             quit()
         while True:
             current_tag = current_tag.parent
@@ -128,6 +131,12 @@ def start_download():
     course_name = course_var.get()
     folder = folder_var.get()
 
+    selected_file_types = []
+    if pdf_var.get():
+        selected_file_types.append('.pdf')
+    if ppt_var.get():
+        selected_file_types.append('.ppt')
+
     if category_name == "Select a category":
         messagebox.showerror("Error", "Please select a category.")
         return
@@ -138,6 +147,10 @@ def start_download():
 
     if not folder:
         messagebox.showerror("Error", "Please select a destination folder.")
+        return
+
+    if not selected_file_types:
+        messagebox.showerror("Error", "Please select at least one file type to download.")
         return
 
     category_url = categories[category_name]
@@ -158,9 +171,9 @@ def start_download():
             print(DECOR + ' Parsing page into a soup...')
             soup = BeautifulSoup(course_page.text, 'html.parser')
             nav_dict = create_nav_links_dictionary(soup)
-            file_dict = find_files_paths_and_links(nav_dict, soup)
+            file_dict = find_files_paths_and_links(nav_dict, soup, selected_file_types)
             
-            progress_bar.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+            progress_bar.grid(row=6, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
             download_from_dict(file_dict, download_folder, progress_bar)
             progress_bar.grid_remove()  # Remove progress bar after download completes
             messagebox.showinfo("Success", "Download complete!")
@@ -180,7 +193,7 @@ root.title("MSC-MU Lecture Downloader")
 
 # Configure grid layout
 root.grid_columnconfigure(1, weight=1)
-root.grid_rowconfigure(4, weight=1)
+root.grid_rowconfigure(6, weight=1)
 
 # Category selection
 ctk.CTkLabel(root, text="Select Category:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
@@ -202,11 +215,18 @@ folder_entry = ctk.CTkEntry(root, textvariable=folder_var, width=50)
 folder_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
 ctk.CTkButton(root, text="Browse...", command=lambda: folder_var.set(filedialog.askdirectory())).grid(row=2, column=2, padx=10, pady=5, sticky="ew")
 
-# Download button
-ctk.CTkButton(root, text="Download", command=start_download).grid(row=3, column=1, padx=10, pady=10, sticky="ew")
+# File type selection
+ctk.CTkLabel(root, text="Select File Types:").grid(row=3, column=0, padx=10, pady=5, sticky="w")
+pdf_var = ctk.BooleanVar()
+ppt_var = ctk.BooleanVar()
+ctk.CTkCheckBox(root, text=".pdf", variable=pdf_var).grid(row=3, column=1, padx=10, pady=5, sticky="w")
+ctk.CTkCheckBox(root, text=".ppt", variable=ppt_var).grid(row=3, column=2, padx=10, pady=5, sticky="w")
+
+# Start download button
+ctk.CTkButton(root, text="Start Download", command=start_download).grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
 
 # Progress bar
 progress_bar = ctk.CTkProgressBar(root)
-progress_bar.set(0)
+progress_bar.grid_remove()  # Hide progress bar initially
 
 root.mainloop()
