@@ -173,6 +173,8 @@ def find_files_paths_and_links(navigation_dict, soup):
 
 
 def download_from_dict(path_link_dict, folder):
+    global downloaded_count
+    downloaded_count = 0
     counter = 0
     for path, link, name in track(path_link_dict, description=f'{DECOR} Downloading...'):
 
@@ -189,6 +191,7 @@ def download_from_dict(path_link_dict, folder):
         with open(folder + path + name, 'wb') as file:
             file.write(response.content)
         print(DECOR + ' Downloaded ' + name + count)
+        downloaded_count += 1
 
 
 def main():
@@ -219,8 +222,10 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print('\n' + DECOR + ' KeyboardInterrupt')
+        print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
         print(DECOR + ' Good bye!')
         quit()
     print('\n\n' + DECOR + ' Done...')
+    print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
     print(DECOR + ' Goodbye!')
-    input(DECOR + ' Press anything to \033[31;1mexit')
+    input(DECOR + ' Press enter to \033[31;1mexit')
