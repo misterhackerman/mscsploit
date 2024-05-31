@@ -35,7 +35,7 @@ We all know our uni sucks, this could possibly make it https://suckless.org/
 
 + I don't think you will be using this. and if you want to u already know how.
 
-## Star History
+## Star History (a meme)
 
 <a href="https://star-history.com/#zahckk/mscsploit&Date">
  <picture>
