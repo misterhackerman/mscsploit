@@ -35,5 +35,16 @@ We all know our uni sucks, this could possibly make it https://suckless.org/
 
 + I don't think you will be using this. and if you want to u already know how.
 
+## Star History
+
+<a href="https://star-history.com/#zahckk/mscsploit&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=zahckk/mscsploit&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=zahckk/mscsploit&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=zahckk/mscsploit&type=Date" />
+ </picture>
+</a>
+
+
 ---
 ![msc-mu image](https://msc-mu.com/storage/KW8sliIbaWpfdgNaWNxFQQN822p88X46pq8ZMSyy.png)
