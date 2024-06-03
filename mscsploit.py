@@ -24,7 +24,7 @@ HEADERS = headers = {
 
 def choose_category():
     categories = [
-        [1, 'sha3\'af', 'https://msc-mu.com/level/18'],
+        [1, 'Sha3\'af', 'https://msc-mu.com/level/18'],
         [2, 'Athar', 'https://msc-mu.com/level/17'],
         [3, 'Rou7', 'https://msc-mu.com/level/16'],
         [4, 'Wateen', 'https://msc-mu.com/level/15'],
@@ -212,6 +212,10 @@ def main():
     nav_dict = create_nav_links_dictionary(soup)
     file_dict = find_files_paths_and_links(nav_dict, soup)
     download_from_dict(file_dict, folder)
+    print('\n\n' + DECOR + ' Done...')
+    print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
+    print(DECOR + ' Goodbye!')
+    input(DECOR + ' Press enter to \033[31;1mexit')
 
 
 if __name__ == '__main__':
@@ -225,10 +229,7 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print('\n' + DECOR + ' KeyboardInterrupt')
-        print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
+        if 'downloaded_count' in globals():
+            print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
         print(DECOR + ' Good bye!')
         quit()
-    print('\n\n' + DECOR + ' Done...')
-    print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
-    print(DECOR + ' Goodbye!')
-    input(DECOR + ' Press enter to \033[31;1mexit')
