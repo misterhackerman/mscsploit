@@ -24,13 +24,14 @@ HEADERS = headers = {
 
 def choose_category():
     categories = [
-        [1, 'Athar', 'https://msc-mu.com/level/17'],
-        [2, 'Rou7', 'https://msc-mu.com/level/16'],
-        [3, 'Wateen', 'https://msc-mu.com/level/15'],
-        [4, 'Nabed', 'https://msc-mu.com/level/14'],
-        [5, 'Wareed', 'https://msc-mu.com/level/13'],
-        [6, 'Minors', 'https://msc-mu.com/level/10'],
-        [7, 'Majors', 'https://msc-mu.com/level/9']
+        [1, 'sha3\'af', 'https://msc-mu.com/level/18'],
+        [2, 'Athar', 'https://msc-mu.com/level/17'],
+        [3, 'Rou7', 'https://msc-mu.com/level/16'],
+        [4, 'Wateen', 'https://msc-mu.com/level/15'],
+        [5, 'Nabed', 'https://msc-mu.com/level/14'],
+        [6, 'Wareed', 'https://msc-mu.com/level/13'],
+        [7, 'Minors', 'https://msc-mu.com/level/10'],
+        [8, 'Majors', 'https://msc-mu.com/level/9']
     ]
     if args.category:
         category_url = categories[args.category - 1][2]
