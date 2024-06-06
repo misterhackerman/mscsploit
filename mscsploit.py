@@ -15,7 +15,7 @@ parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify des
 parser.add_argument('-v', '--verbose', action='store_true', help='Increase Verbosity')
 args = parser.parse_args()
 
-DECOR = ' \033[34;1m::\033[0m'
+DECOR = ' \033[34;1m::\033[0m '
 FOLDER = '/dox/med'
 
 HEADERS = headers = {
@@ -36,21 +36,21 @@ def choose_category():
     ]
     if args.category:
         category_url = categories[args.category - 1][2]
-        print(DECOR + ' Searching', categories[args.category - 1][1] + '\'s category...')
+        print(DECOR + 'Searching', categories[args.category - 1][1] + '\'s category...')
         return category_url
     print('\n')
     for category in categories:
         print(str(category[0]) + ') ' + category[1])
-    selected_category = input('\n' + DECOR + ' Choose  a category.\n\n>> ')
+    selected_category = input('\n' + DECOR + 'Choose  a category.\n\n>> ')
     try:
         selected_category = int(selected_category)
         for category in categories:
             if selected_category == category[0]:
-                print('\n' + DECOR + ' Searching', category[1] + '\'s category...\n')
+                print('\n' + DECOR + 'Searching', category[1] + '\'s category...\n')
         category_url = categories[selected_category - 1][2]
         return category_url
     except:
-        print('\n' + DECOR + ' Invalid Input\n')
+        print('\n' + DECOR + 'Invalid Input\n')
         return choose_category()
 
 
@@ -70,18 +70,18 @@ def find_courses(url):
 def choose_course(courses):
     if args.course:
         course_number = str(courses[args.course - 1][2])
-        print(DECOR + ' Alright, ', courses[args.course - 1][1])
+        print(DECOR + 'Alright, ', courses[args.course - 1][1])
         return course_number
     for course in courses:
         print(str(course[0]) + ') ' + course[1])
-    selected_course = input('\n' + DECOR + ' Which course would you like to download?\n\n>> ')
+    selected_course = input('\n' + DECOR + 'Which course would you like to download?\n\n>> ')
     list_index = None
     try:
         selected_course = int(selected_course)
         for course in courses:
             if selected_course == course[0]:
                 list_index = selected_course - 1
-                print('\n' + DECOR + ' Alright, ', course[1])
+                print('\n' + DECOR + 'Alright, ', course[1])
         course_number = str(courses[list_index][2])
         return course_number
     except:
@@ -100,14 +100,14 @@ def choose_folder():
                 folder = folder + os.path.sep
             return folder
         else:
-            print('\n' + DECOR + ' Folder Not found! ', end='')
+            print('\n' + DECOR + 'Folder Not found! ', end='')
             quit()
     else:
-        answer = input(DECOR + ' Your default destination is ' + folder + '\n' + DECOR + ' Do you want to keep that (Y/n): ')
+        answer = input(DECOR + 'Your default destination is ' + folder + '\n' + DECOR + ' Do you want to keep that (Y/n): ')
         if answer == 'n' or answer == 'no' or answer == 'N':
             valid_folder = False
             while not valid_folder:
-                selected_folder = input('\n' + DECOR + ' Enter the Folder you want to save material in.\n\n>> ')
+                selected_folder = input('\n' + DECOR + 'Enter the Folder you want to save material in.\n\n>> ')
                 # Adds a seperator at the end if the user didn't
                 if not selected_folder.endswith(os.path.sep):
                     selected_folder = selected_folder + os.path.sep
@@ -116,7 +116,7 @@ def choose_folder():
                     folder = selected_folder
                     valid_folder = True
                 else:
-                    print('\n' + DECOR + ' Folder Not found! ', end='')
+                    print('\n' + DECOR + 'Folder Not found! ', end='')
     if not folder[-1] == os.path.sep:
         folder = folder + os.path.sep
     return folder
@@ -179,7 +179,7 @@ def download_from_dict(path_link_dict, folder):
     global downloaded_count
     downloaded_count = 0
     counter = 0
-    for path, link, name in track(path_link_dict, description=f'{DECOR} Downloading...'):
+    for path, link, name in track(path_link_dict, description=f'{DECOR}Downloading...'):
 
         counter = counter + 1
         count = f' ({counter}/{len(path_link_dict)})'
@@ -191,12 +191,13 @@ def download_from_dict(path_link_dict, folder):
         if not os.path.isdir(folder + path):
             os.makedirs(folder + path)
 
+        # TODO delete incomplete downloads
         response = s.get(link, headers=HEADERS, stream=True)
         with open(folder + path + name, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     file.write(chunk)
-        print(DECOR + ' Downloaded ' + name + count)
+        print(DECOR + 'Downloaded ' + name + count)
         downloaded_count += 1
 
 
@@ -208,20 +209,20 @@ def main():
     course_number = choose_course(courses)
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
-    print(DECOR + ' Requesting page...')
+    print(DECOR + 'Requesting page...')
     course_page = s.get(download_url, headers=HEADERS)
-    print(DECOR + ' Parsing page into a soup...')
+    print(DECOR + 'Parsing page into a soup...')
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
     nav_dict = create_nav_links_dictionary(soup)
     file_dict = find_files_paths_and_links(nav_dict, soup)
     download_from_dict(file_dict, folder)
-    print('\n\n' + DECOR + ' Done...')
-    print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
-    print(DECOR + ' Goodbye!')
+    print('\n\n' + DECOR + 'Done...')
+    print(DECOR + 'Downloaded ' + str(downloaded_count) + ' files.')
+    print(DECOR + 'Goodbye!')
     finish = datetime.datetime.now() - start
-    print(finish)
-    input(DECOR + ' Press enter to \033[31;1mexit')
+    print(DECOR + 'Time it took: ' + str(finish))
+    input(DECOR + 'Press enter to \033[31;1mexit')
 
 
 if __name__ == '__main__':
@@ -235,8 +236,8 @@ if __name__ == '__main__':
         s = requests.Session()
         main()
     except KeyboardInterrupt:
-        print('\n' + DECOR + ' KeyboardInterrupt')
+        print('\n' + DECOR + 'KeyboardInterrupt')
         if 'downloaded_count' in globals():
-            print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
-        print(DECOR + ' Good bye!')
+            print(DECOR + 'Downloaded ' + str(downloaded_count) + ' files.')
+        print(DECOR + 'Good bye!')
         quit()
