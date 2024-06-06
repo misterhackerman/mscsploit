@@ -6,6 +6,7 @@ import requests
 import argparse
 import re
 import os
+import datetime
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-t', '--category', type=int, metavar='', help='to specify category number')
@@ -54,7 +55,7 @@ def choose_category():
 
 
 def find_courses(url):
-    page = requests.get(url, headers=HEADERS)
+    page = s.get(url, headers=HEADERS)
     doc = BeautifulSoup(page.text, 'html.parser')
     subject = doc.find_all('h6')
     courses = []
@@ -190,7 +191,7 @@ def download_from_dict(path_link_dict, folder):
         if not os.path.isdir(folder + path):
             os.makedirs(folder + path)
 
-        response = requests.get(link, headers=HEADERS)
+        response = s.get(link, headers=HEADERS)
         with open(folder + path + name, 'wb') as file:
             file.write(response.content)
         print(DECOR + ' Downloaded ' + name + count)
@@ -198,6 +199,7 @@ def download_from_dict(path_link_dict, folder):
 
 
 def main():
+    start = datetime.datetime.now()
     folder = choose_folder()
     category_url = choose_category()
     courses = find_courses(category_url)
@@ -205,7 +207,7 @@ def main():
     folder = make_course_folder(courses, course_number, folder)
     download_url = 'https://msc-mu.com/courses/' + course_number
     print(DECOR + ' Requesting page...')
-    course_page = requests.get(download_url, headers=HEADERS)
+    course_page = s.get(download_url, headers=HEADERS)
     print(DECOR + ' Parsing page into a soup...')
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
@@ -215,6 +217,8 @@ def main():
     print('\n\n' + DECOR + ' Done...')
     print(DECOR + ' Downloaded ' + str(downloaded_count) + ' files.')
     print(DECOR + ' Goodbye!')
+    finish = datetime.datetime.now() - start
+    print(finish)
     input(DECOR + ' Press enter to \033[31;1mexit')
 
 
@@ -226,6 +230,7 @@ if __name__ == '__main__':
  ██║ ╚═╝ ██║███████║╚██████╗███████║██║     ███████╗╚██████╔╝██║   ██║
  ╚═╝     ╚═╝╚══════╝ ╚═════╝╚══════╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝''')
     try:
+        s = requests.Session()
         main()
     except KeyboardInterrupt:
         print('\n' + DECOR + ' KeyboardInterrupt')
