@@ -193,7 +193,9 @@ def download_from_dict(path_link_dict, folder):
 
         response = s.get(link, headers=HEADERS)
         with open(folder + path + name, 'wb') as file:
-            file.write(response.content)
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    file.write(chunk)
         print(DECOR + ' Downloaded ' + name + count)
         downloaded_count += 1
 
