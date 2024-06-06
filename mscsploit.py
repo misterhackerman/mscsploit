@@ -191,7 +191,7 @@ def download_from_dict(path_link_dict, folder):
         if not os.path.isdir(folder + path):
             os.makedirs(folder + path)
 
-        response = s.get(link, headers=HEADERS)
+        response = s.get(link, headers=HEADERS, stream=True)
         with open(folder + path + name, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
