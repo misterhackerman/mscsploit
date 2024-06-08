@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import os
+
+# for the gui
 import customtkinter as ctk
 from tkinter import messagebox, filedialog, Listbox, Toplevel
 import threading
@@ -113,12 +115,12 @@ def find_files_paths_and_links(navigation_dict, soup, file_types):
 def download_from_dict(path_link_dict, folder, progress_bar):
     counter = 0
     total_files = len(path_link_dict)
-    
+
     for path, link, name in path_link_dict:
         counter += 1
         count = f' ({counter}/{total_files})'
         full_path = os.path.join(folder, path)
-        
+
         if os.path.isfile(os.path.join(full_path, name)):
             print('[ Already there! ] ' + name + count)
             already_downloaded_listbox.insert("end", name)
@@ -131,19 +133,17 @@ def download_from_dict(path_link_dict, folder, progress_bar):
         with open(os.path.join(full_path, name), 'wb') as file:
             file.write(response.content)
         print(DECOR + ' Downloaded ' + name + count)
-        downloading_listbox.insert("end", name)
-        
         # Update the progress bar
         progress = counter / total_files
         progress_bar.set(progress)
 
-def update_courses_menu(*args):
+def update_courses_menu():
     category_name = category_var.get()
     if category_name == "Select a category":
         return
 
     category_url = categories[category_name]
-    
+
     try:
         courses = find_courses(category_url)
     except Exception as e:
@@ -186,7 +186,7 @@ def start_download():
     except Exception as e:
         messagebox.showerror("Error", f"Failed to fetch courses: {e}")
         return
-    
+
     course_number = next(course[2] for course in courses if course[1] == course_name)
     download_folder = make_course_folder(folder, course_name)
     download_url = 'https://msc-mu.com/courses/' + course_number
@@ -198,9 +198,9 @@ def start_download():
             print(DECOR + ' Parsing page into a soup...')
             soup = BeautifulSoup(course_page.text, 'html.parser')
             nav_dict = create_nav_links_dictionary(soup)
-            file_dict = find_files_paths_and_links(nav_dict, soup, selected_file_types)
-            
-            progress_bar.grid(row=8, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+            file_dict = find_files_paths_and_links(nav_dict, soup)
+
+            progress_bar.grid(row=4, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
             download_from_dict(file_dict, download_folder, progress_bar)
             progress_bar.grid_remove()  # Remove progress bar after download completes
             messagebox.showinfo("Success", "Download complete!")
