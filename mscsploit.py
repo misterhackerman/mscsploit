@@ -3,10 +3,11 @@
 from bs4 import BeautifulSoup
 from rich.progress import track
 import requests
+
 import argparse
-import re
-import os
 import datetime
+import os
+import re
 
 parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
 parser.add_argument('-t', '--category', type=int, metavar='', help='to specify category number')
