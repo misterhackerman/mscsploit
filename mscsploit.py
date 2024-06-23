@@ -185,11 +185,15 @@ def download_from_dict(path_link_dict, folder):
     counter = 0
     for path, link, name in track(path_link_dict, description=f'{DECOR}Downloading...'):
 
-        counter = counter + 1
+        counter += 1
         count = f' ({counter}/{len(path_link_dict)})'
-        if os.path.isfile(folder + path + name):
+
+        # Sanitize the lecture name
+        safe_name = re.sub(r'[\/:*?"<>|]', '_', name)
+
+        if os.path.isfile(folder + path + safe_name):
             if args.verbose:
-                print('[ Already there! ] ' + name + count)
+                print('[ Already there! ] ' + safe_name + count)
             continue
 
         if not os.path.isdir(folder + path):
@@ -197,11 +201,11 @@ def download_from_dict(path_link_dict, folder):
 
         # TODO delete incomplete downloads
         response = s.get(link, headers=HEADERS, stream=True)
-        with open(folder + path + name, 'wb') as file:
+        with open(folder + path + safe_name, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     file.write(chunk)
-        print(DECOR + 'Downloaded ' + name + count)
+        print(DECOR + 'Downloaded ' + safe_name + count)
         downloaded_count += 1
 
 
