@@ -140,7 +140,10 @@ def make_course_folder(courses, index, folder):
         if course[2] == index:
             course_name = course[1]
             break
-    new_folder = folder + course_name + os.path.sep
+    # Replace any invalid characters with an underscore
+    safe_course_name = re.sub(r'[\/:*?"<>|]', '_', course_name)
+    new_folder = folder + safe_course_name + os.path.sep
+
     if not os.path.isdir(new_folder):
         os.mkdir(new_folder)
     folder = new_folder
