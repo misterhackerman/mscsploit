@@ -26,6 +26,10 @@ HEADERS = headers = {
 s = requests.Session()
 
 class Scraper:
+
+    def __init__(self):
+        pass
+
     def choose_category(self):
         categories = [
             [1, 'Sha3\'af', 'https://msc-mu.com/level/18'],
