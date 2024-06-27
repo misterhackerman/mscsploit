@@ -26,6 +26,7 @@ HEADERS = headers = {
 s = requests.Session()
 
 class Scraper:
+    downloaded_count = 0
 
     def __init__(self):
         pass
@@ -188,7 +189,6 @@ class Scraper:
 
 
     def download_from_dict(self, path_link_dict, folder):
-        downloaded_count = 0
         counter = 0
         for path, link, name in track(path_link_dict, description=f'{DECOR}Downloading...'):
 
@@ -206,15 +206,11 @@ class Scraper:
             if not os.path.isdir(folder + path):
                 os.makedirs(folder + path)
 
-            # TODO delete incomplete downloads
             response = s.get(link, headers=HEADERS, stream=True)
             with open(folder + path + safe_name, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        file.write(chunk)
+                        file.write(response.content)
             print(DECOR + 'Downloaded ' + safe_name + count)
-            downloaded_count += 1
-        return downloaded_count
+            Scraper.downloaded_count += 1
 
 
 def main():
@@ -233,9 +229,9 @@ def main():
 
     nav_dict = scraper.create_nav_links_dictionary(soup)
     file_dict = scraper.find_files_paths_and_links(nav_dict, soup)
-    downloaded_count = scraper.download_from_dict(file_dict, folder)
+    scraper.download_from_dict(file_dict, folder)
     print('\n\n' + DECOR + 'Done...')
-    print(DECOR + 'Downloaded ' + str(downloaded_count) + ' files.')
+    print(DECOR + 'Downloaded ' + str(Scraper.downloaded_count) + ' files.')
     print(DECOR + 'Goodbye!')
     finish = datetime.datetime.now() - start
     print(DECOR + 'Time it took: ' + str(finish))
@@ -254,7 +250,6 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print('\n' + DECOR + 'KeyboardInterrupt')
-        if 'downloaded_count' in globals():
-            print(DECOR + 'Downloaded ' + str(downloaded_count) + ' files.')
+        print(DECOR + 'Downloaded ' + str(Scraper.downloaded_count) + ' files.')
         print(DECOR + 'Good bye!')
         quit()
