@@ -1,34 +1,19 @@
-#!/usr/bin/python3
-
 from bs4 import BeautifulSoup
 from rich.progress import track
 import requests
 
-import argparse
-import datetime
 import os
 import re
 
-parser = argparse.ArgumentParser(description='API to download lectures off msc-mu.com')
-parser.add_argument('-t', '--category', type=int, metavar='', help='to specify category number')
-parser.add_argument('-c', '--course', type=int, metavar='', help='to specify course number')
-parser.add_argument('-f', '--folder', type=str, metavar='', help='to specify destination folder')
-parser.add_argument('-v', '--verbose', action='store_true', help='Increase Verbosity')
-args = parser.parse_args()
+from config import *
 
-DECOR = ' \033[34;1m::\033[0m '
-FOLDER = '/dox/med'
-
-HEADERS = headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-
-s = requests.Session()
 
 class Scraper:
+    downloaded_count = 0
 
-    def __init__(self):
-        pass
+    def __init__(self, args):
+        self.args = args
+        self.session = requests.session()
 
     def choose_category(self):
         categories = [
@@ -41,9 +26,9 @@ class Scraper:
             [7, 'Minors', 'https://msc-mu.com/level/10'],
             [8, 'Majors', 'https://msc-mu.com/level/9']
         ]
-        if args.category:
-            category_url = categories[args.category - 1][2]
-            print(DECOR + 'Searching', categories[args.category - 1][1] + '\'s category...')
+        if self.args.category:
+            category_url = categories[self.args.category - 1][2]
+            print(DECOR + 'Searching', categories[self.args.category - 1][1] + '\'s category...')
             return category_url
         print('\n')
         for category in categories:
@@ -64,7 +49,7 @@ class Scraper:
 
 
     def find_courses(self, url):
-        page = s.get(url, headers=HEADERS)
+        page = self.session.get(url, headers=HEADERS)
         doc = BeautifulSoup(page.text, 'html.parser')
         subject = doc.find_all('h6')
         courses = []
@@ -77,9 +62,9 @@ class Scraper:
 
 
     def choose_course(self, courses):
-        if args.course:
-            course_number = str(courses[args.course - 1][2])
-            print(DECOR + 'Alright, ', courses[args.course - 1][1])
+        if self.args.course:
+            course_number = str(courses[self.args.course - 1][2])
+            print(DECOR + 'Alright, ', courses[self.args.course - 1][1])
             return course_number
         for course in courses:
             print(str(course[0]) + ') ' + course[1])
@@ -100,11 +85,11 @@ class Scraper:
 
     def choose_folder(self):
         folder = os.path.expanduser("~") + FOLDER
-        if args.folder:
-            if '~' in args.folder:
-                args.folder = os.path.expanduser(args.folder)
-            if os.path.isdir(args.folder):
-                folder = args.folder
+        if self.args.folder:
+            if '~' in self.args.folder:
+                self.args.folder = os.path.expanduser(args.folder)
+            if os.path.isdir(self.args.folder):
+                folder = self.args.folder
                 if not folder[-1] == os.path.sep:
                     folder = folder + os.path.sep
                 return folder
@@ -188,7 +173,6 @@ class Scraper:
 
 
     def download_from_dict(self, path_link_dict, folder):
-        downloaded_count = 0
         counter = 0
         for path, link, name in track(path_link_dict, description=f'{DECOR}Downloading...'):
 
@@ -199,62 +183,16 @@ class Scraper:
             safe_name = re.sub(r'[\/:*?"<>|]', '_', name)
 
             if os.path.isfile(folder + path + safe_name):
-                if args.verbose:
+                if self.args.verbose:
                     print('[ Already there! ] ' + safe_name + count)
                 continue
 
             if not os.path.isdir(folder + path):
                 os.makedirs(folder + path)
 
-            # TODO delete incomplete downloads
-            response = s.get(link, headers=HEADERS, stream=True)
+            response = self.session.get(link, headers=HEADERS, stream=True)
             with open(folder + path + safe_name, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        file.write(chunk)
+                        file.write(response.content)
             print(DECOR + 'Downloaded ' + safe_name + count)
-            downloaded_count += 1
-            return downloaded_count
+            Scraper.downloaded_count += 1
 
-
-def main():
-    # main function should use the scraper class
-    start = datetime.datetime.now()
-    folder = scraper.choose_folder()
-    category_url = scraper.choose_category()
-    courses = scraper.find_courses(category_url)
-    course_number = scraper.choose_course(courses)
-    folder = scraper.make_course_folder(courses, course_number, folder)
-    download_url = 'https://msc-mu.com/courses/' + course_number
-    print(DECOR + 'Requesting page...')
-    course_page = s.get(download_url, headers=HEADERS)
-    print(DECOR + 'Parsing page into a soup...')
-    soup = BeautifulSoup(course_page.text, 'html.parser')
-
-    nav_dict = scraper.create_nav_links_dictionary(soup)
-    file_dict = scraper.find_files_paths_and_links(nav_dict, soup)
-    downloaded_count = scraper.download_from_dict(file_dict, folder)
-    print('\n\n' + DECOR + 'Done...')
-    print(DECOR + 'Downloaded ' + str(downloaded_count) + ' files.')
-    print(DECOR + 'Goodbye!')
-    finish = datetime.datetime.now() - start
-    print(DECOR + 'Time it took: ' + str(finish))
-    input(DECOR + 'Press enter to \033[31;1mexit')
-
-
-if __name__ == '__main__':
-    print(''' ███╗   ███╗███████╗ ██████╗███████╗██████╗ ██╗      ██████╗ ██╗████████╗
- ████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██║     ██╔═══██╗██║╚══██╔══╝
- ██╔████╔██║███████╗██║     ███████╗██████╔╝██║     ██║   ██║██║   ██║
- ██║╚██╔╝██║╚════██║██║     ╚════██║██╔═══╝ ██║     ██║   ██║██║   ██║
- ██║ ╚═╝ ██║███████║╚██████╗███████║██║     ███████╗╚██████╔╝██║   ██║
- ╚═╝     ╚═╝╚══════╝ ╚═════╝╚══════╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝''')
-    try:
-        scraper = Scraper()
-        main()
-    except KeyboardInterrupt:
-        print('\n' + DECOR + 'KeyboardInterrupt')
-        if 'downloaded_count' in globals():
-            print(DECOR + 'Downloaded ' + str(downloaded_count) + ' files.')
-        print(DECOR + 'Good bye!')
-        quit()
