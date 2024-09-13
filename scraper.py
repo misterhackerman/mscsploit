@@ -85,6 +85,7 @@ class Scraper:
 
     def choose_folder(self):
         folder = os.path.expanduser("~") + FOLDER
+        # TODO let the system figure out the directory.
         if self.args.folder:
             if '~' in self.args.folder:
                 self.args.folder = os.path.expanduser(args.folder)

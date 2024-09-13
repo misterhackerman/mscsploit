@@ -21,6 +21,7 @@ def main():
     print(DECOR + 'Requesting page...')
     course_page = scraper.session.get(download_url, headers=HEADERS)
     print(DECOR + 'Parsing page into a soup...')
+    print(DECOR + f"I'll download {EXTENSIONS} files.")
     soup = BeautifulSoup(course_page.text, 'html.parser')
 
     nav_dict = scraper.create_nav_links_dictionary(soup)
