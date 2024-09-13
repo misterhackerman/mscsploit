@@ -144,7 +144,9 @@ class Scraper:
 
 
     def find_files_paths_and_links(self, navigation_dict, soup):
-        file_tags = soup.find_all('a', string=lambda text: text and '.pdf' in text) + soup.find_all('a', string=lambda text: text and '.ppt' in text) + soup.find_all('a', string=lambda text: text and '.m4a' in text)
+        file_tags = []
+        for extension in EXTENSIONS:
+            file_tags += soup.find_all('a', string=lambda text: text and f'.{extension}' in text)
         files_list = []
         path = []
         associated_nav_link_id = ''
