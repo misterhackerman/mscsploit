@@ -84,7 +84,7 @@ class Scraper:
 
 
     def choose_folder(self):
-        folder = os.path.expanduser("~") + FOLDER
+        folder = FOLDER
         # TODO let the system figure out the directory.
         if self.args.folder:
             if '~' in self.args.folder:
@@ -134,7 +134,7 @@ class Scraper:
             if course[2] == index:
                 course_name = course[1]
                 break
-        # Replace any invalid characters with an underscore
+        # Replace any invalid characters with an underscore ( Sanitize course name )
         safe_course_name = re.sub(r'[\/:*?"<>|]', '_', course_name)
         new_folder = folder + safe_course_name + os.path.sep
 
