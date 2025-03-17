@@ -13,6 +13,7 @@ def main():
     # main function should use the scraper class
     start = datetime.datetime.now()
     folder = scraper.choose_folder()
+    print(DECOR + f"Choosen folder: {folder}")
     category_url = scraper.choose_category()
     courses = scraper.find_courses(category_url)
     course_number = scraper.choose_course(courses)
