@@ -87,12 +87,14 @@ class Scraper:
         folder = FOLDER
         # TODO let the system figure out the directory.
         if self.args.folder:
-            if '~' in self.args.folder:
-                self.args.folder = os.path.expanduser(args.folder)
-            if os.path.isdir(self.args.folder):
+            if self.args.folder != 'default':
                 folder = self.args.folder
-                if not folder[-1] == os.path.sep:
-                    folder = folder + os.path.sep
+
+            if '~' in folder:
+                folder = os.path.expanduser(folder)
+            if not folder[-1] == os.path.sep:
+                folder = folder + os.path.sep
+            if os.path.isdir(folder):
                 return folder
             else:
                 print('\n' + DECOR + 'Folder Not found! ', end='')

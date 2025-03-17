@@ -10,7 +10,7 @@ def get_args():
             '-c', '--course', type=int, metavar='', help='to specify course number'
             )
     parser.add_argument(
-            '-f', '--folder', type=str, metavar='', help='to specify destination folder'
+            '-f', '--folder', type=str, metavar='', help='to specify destination folder (default: to use what is in config)'
             )
     parser.add_argument(
             '-v', '--verbose', action='store_true', help='Increase Verbosity'
