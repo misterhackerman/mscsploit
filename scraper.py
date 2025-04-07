@@ -86,8 +86,8 @@ class Scraper:
     def choose_folder(self):
         folder = FOLDER
         # TODO let the system figure out the directory.
-        if self.args.folder:
-            if self.args.folder != 'default':
+        if self.args.folder or self.args.default_folder:
+            if not self.args.default_folder:
                 folder = self.args.folder
 
             if '~' in folder:
