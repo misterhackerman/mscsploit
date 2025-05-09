@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 
-from bs4 import BeautifulSoup
-import requests
-
 import datetime
 
+import requests
+from bs4 import BeautifulSoup
 from cli import get_args
 from config import *
 from scraper import Scraper
+
 
 def main():
     # main function should use the scraper class

@@ -1,5 +1,6 @@
 import argparse
 
+
 def get_args():
     parser = argparse.ArgumentParser(
             description='API to download lectures off msc-mu.com')
@@ -19,4 +20,3 @@ def get_args():
             '-v', '--verbose', action='store_true', help='Increase Verbosity'
             )
     return parser.parse_args()
-

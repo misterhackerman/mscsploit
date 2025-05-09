@@ -1,9 +1,9 @@
-from bs4 import BeautifulSoup
-from rich.progress import track
-import requests
-
 import os
 import re
+
+import requests
+from bs4 import BeautifulSoup
+from rich.progress import track
 
 from config import *
 
@@ -200,4 +200,3 @@ class Scraper:
                         file.write(response.content)
             print(DECOR + 'Downloaded ' + safe_name + count)
             Scraper.downloaded_count += 1
-
