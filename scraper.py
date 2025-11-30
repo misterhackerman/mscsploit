@@ -156,6 +156,7 @@ class Scraper:
         for file_tag in file_tags:
             current_tag = file_tag
             if not current_tag:
+                # TODO fix this print to include all EXTENSIONS
                 print('no pdf or pptx files!')
                 quit()
             while True:
