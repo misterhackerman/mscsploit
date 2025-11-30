@@ -2,10 +2,9 @@
 
 import datetime
 
-import requests
 from bs4 import BeautifulSoup
 from cli import get_args
-from config import *
+from config import DECOR, EXTENSIONS, HEADERS
 from scraper import Scraper
 
 

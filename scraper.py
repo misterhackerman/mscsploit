@@ -3,9 +3,9 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
-from rich.progress import track
+from tqdm import tqdm
 
-from config import *
+from config import EXTENSIONS, DECOR, HEADERS, FOLDER
 
 
 class Scraper:
@@ -43,7 +43,7 @@ class Scraper:
                     return category_url
                     break
             raise Exception
-        except:
+        except Exception:
             print('\n' + DECOR + 'Invalid Input\n')
             return self.choose_category()
 
@@ -78,7 +78,7 @@ class Scraper:
                     print('\n' + DECOR + 'Alright, ', course[1])
             course_number = str(courses[list_index][2])
             return course_number
-        except:
+        except Exception:
             print('\n' + DECOR + 'Invalid Input\n')
             return self.choose_course(courses)
 
@@ -180,7 +180,7 @@ class Scraper:
 
     def download_from_dict(self, path_link_dict, folder):
         counter = 0
-        for path, link, name in track(path_link_dict, description=f'{DECOR}Downloading...'):
+        for path, link, name in path_link_dict:
 
             counter += 1
             count = f' ({counter}/{len(path_link_dict)})'
@@ -196,8 +196,19 @@ class Scraper:
             if not os.path.isdir(folder + path):
                 os.makedirs(folder + path)
 
-            response = self.session.get(link, headers=HEADERS, stream=True)
-            with open(folder + path + safe_name, 'wb') as file:
-                        file.write(response.content)
-            print(DECOR + 'Downloaded ' + safe_name + count)
-            Scraper.downloaded_count += 1
+            try:
+
+                with requests.get(link, headers=HEADERS, stream=True) as r:
+                    total_size = int(r.headers.get("content-length"))
+                    t = tqdm(total=total_size, unit= "iB", unit_scale=True, ascii='-#', leave=False)
+                    with open(folder + path + safe_name, 'wb') as file:
+                        for chunk in r.iter_content(chunk_size=1 * 1024 * 1024):
+                                file.write(chunk)
+                                t.update(len(chunk))
+
+                    print(DECOR + 'Downloaded ' + safe_name + count)
+                    Scraper.downloaded_count += 1
+            except Exception as e:
+                print(f"File: {safe_name} didn't download successfully ;(")
+                print(e)
+
