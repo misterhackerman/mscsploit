@@ -1,19 +1,17 @@
 #!/usr/bin/python3
+import argparse
+import datetime
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from bs4 import BeautifulSoup
-from tqdm import tqdm
-
 from fake_useragent import FakeUserAgent
-import argparse
-
-import datetime
+from tqdm import tqdm
 
 ua = FakeUserAgent()
 
-# this is home + your favorite dir
 FOLDER = os.path.expanduser("~") + '/dox/med'
 HEADERS  = {
             "User-Agent": ua.random,
@@ -216,41 +214,59 @@ class Scraper:
         return files_list
 
 
-    def download_from_dict(self, path_link_dict, folder):
-        counter = 0
-        for path, link, name in path_link_dict:
-
-            counter += 1
-            count = f' ({counter}/{len(path_link_dict)})'
-
-            # Sanitize the lecture name
+    def _download_single_file(self, data):
+            path, link, name, folder = data
             safe_name = re.sub(r'[\/:*?"<>|]', '_', name)
+            full_path = os.path.join(folder, path)
+            file_location = os.path.join(full_path, safe_name)
 
-            if os.path.isfile(folder + path + safe_name):
-                if self.args.verbose:
-                    print('[ Already there! ] ' + safe_name + count)
-                continue
+            if os.path.isfile(file_location):
+                return # Skip existing
 
-            if not os.path.isdir(folder + path):
-                os.makedirs(folder + path)
+            if not os.path.isdir(full_path):
+                os.makedirs(full_path, exist_ok=True)
 
             try:
+                with self.session.get(link, headers=HEADERS, stream=True) as r:
+                    total_size = int(r.headers.get("content-length", 0))
+                    with tqdm(total=total_size, unit="B", unit_scale=True,
+                             desc=f"{safe_name:14.14}", leave=False, ascii='-#', ncols=86) as file_bar:
 
-                with requests.get(link, headers=HEADERS, stream=True) as r:
-                    total_size = int(r.headers.get("content-length"))
-                    t = tqdm(total=total_size, unit= "iB", unit_scale=True, ascii='-#', leave=False, ncols=86)
-                    with open(folder + path + safe_name, 'wb') as file:
-                        for chunk in r.iter_content(chunk_size=1 * 1024 * 1024):
+                        with open(file_location, 'wb') as file:
+                            for chunk in r.iter_content(chunk_size=128 * 1024):
                                 file.write(chunk)
-                                t.update(len(chunk))
+                                file_bar.update(len(chunk))
 
-                    t.close()
-                    print(DECOR + 'Downloaded ' + safe_name + count)
-                    Scraper.downloaded_count += 1
+                Scraper.downloaded_count += 1
+
             except Exception as e:
-                print(f"File: {safe_name} didn't download successfully ;(")
-                print(e)
+                # Using tqdm.write prevents breaking the progress bars
+                tqdm.write(f"Error on {safe_name}: {e}")
 
+
+
+    def download_from_dict(self, path_link_dict, folder):
+            print(DECOR + "Starting threaded download...")
+            tasks = [(path, link, name, folder) for path, link, name in path_link_dict]
+
+            # 1. Start executor manually (No 'with' statement)
+            executor = ThreadPoolExecutor(max_workers=5)
+            futures = [executor.submit(self._download_single_file, t) for t in tasks]
+
+            try:
+                # 2. Process downloads
+                with tqdm(total=len(tasks), desc="Total Progress", position=0, ncols=86, ascii='-#') as overall_bar:
+                    for _ in as_completed(futures):
+                        overall_bar.update(1)
+
+            except KeyboardInterrupt:
+                # 3. Force kill threads immediately on Ctrl+C
+                print('\n' + DECOR + 'Stopping threads...')
+                executor.shutdown(wait=False)
+                raise # Re-raise error so the main block handles the exit
+
+            # 4. Normal cleanup if no error
+            executor.shutdown(wait=True)
 def main():
     # main function should use the scraper class
     start = datetime.datetime.now()
@@ -293,4 +309,3 @@ if __name__ == '__main__':
         print(DECOR + 'Downloaded ' + str(Scraper.downloaded_count) + ' files.')
         print(DECOR + 'Good bye!')
         quit()
-
