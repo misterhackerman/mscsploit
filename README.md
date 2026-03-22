@@ -17,6 +17,13 @@ We all know our uni sucks, this could possibly make it https://suckless.org/
 4. Run the script.
 `$ python3 ./mscsploit.py`
 
+#### Arch Linux:
+```sh
+git clone https://github.com/misterhackerman/mscsploit.git
+cd mscsploit
+sudo pacman -S python-beautifulsoup4 python-requests python-tqdm python-fake-useragent
+```
+
 ### Windows:
 #### For terminal guys: same as linux.
 #### For noobs:
